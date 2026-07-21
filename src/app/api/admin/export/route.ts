@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { getProduct } from "@/lib/products";
 import { buildOrderWhere } from "@/lib/adminFilters";
@@ -31,7 +32,7 @@ export async function GET(req: Request) {
   const where = buildOrderWhere(url);
 
   const orders = await prisma.order.findMany({
-    where,
+    where: where as Prisma.OrderWhereInput,
     orderBy: { createdAt: "desc" },
   });
 

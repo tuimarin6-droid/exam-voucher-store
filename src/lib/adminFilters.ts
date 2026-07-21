@@ -1,10 +1,11 @@
+import { OrderStatus } from "@prisma/client";
 // Shared admin query helpers used by the overview, export, and summary
 // endpoints so the dashboard table, chart, and CSVs all filter identically.
 
 export type OrderWhere = {
   createdAt?: { gte?: Date; lte?: Date };
   productType?: string;
-  status?: string;
+  status?: OrderStatus;
 };
 
 export type Bucket = "day" | "week";
@@ -35,7 +36,7 @@ export function buildOrderWhere(url: URL): OrderWhere {
   if (product && product !== "all") where.productType = product;
 
   const status = url.searchParams.get("status");
-  if (status && status !== "all") where.status = status;
+  if (status && status !== "all") where.status = status as OrderStatus;
 
   return where;
 }
