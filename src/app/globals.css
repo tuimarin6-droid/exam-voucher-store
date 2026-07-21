@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-[#f7f9fc] text-ink-900 font-sans antialiased;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+    min-height: 44px;
+  }
+  .btn-primary {
+    @apply btn bg-brand-600 text-white shadow-soft hover:bg-brand-700 focus-visible:ring-brand-500;
+  }
+  .btn-accent {
+    @apply btn bg-accent-600 text-white shadow-soft hover:bg-accent-700 focus-visible:ring-accent-500;
+  }
+  .btn-ghost {
+    @apply btn border border-[#e6e5e3] bg-white text-ink-900 hover:bg-[#f0efed] focus-visible:ring-brand-500;
+  }
+  .card {
+    @apply rounded-xl border border-[#e6e5e3] bg-white shadow-card;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

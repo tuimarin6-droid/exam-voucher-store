@@ -1,0 +1,61 @@
+// Prisma schema for the exam voucher store.
+// Default: SQLite (zero-config). For production, switch provider to
+// "postgresql" or "mysql" and update DATABASE_URL.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+/// A single sellable voucher code that you upload in bulk.
+model Voucher {
+  id          String        @id @default(cuid())
+  productType String        // "WASSCE" | "WASSCE_PRIVATE" | "BECE"
+  code        String        @unique
+  status      VoucherStatus @default(AVAILABLE)
+  soldTo      String?       // buyer email once dispensed
+  reference   String?       // Paystack reference that claimed this code
+  soldAt      DateTime?
+  createdAt   DateTime      @default(now())
+
+  @@index([productType, status])
+  @@index([reference])
+}
+
+enum VoucherStatus {
+  AVAILABLE
+  RESERVED
+  SOLD
+}
+
+/// One purchase attempt, keyed by the Paystack reference (idempotency anchor).
+model Order {
+  id           String      @id @default(cuid())
+  reference    String      @unique
+  email        String
+  phone        String?
+  productType  String      // product id (see src/lib/products.ts)
+  category     String      // "VOUCHER" | "FORM"
+  amount       Int         // amount in kobo/pesewas (minor units)
+  currency     String      @default("GHS")
+  status       OrderStatus @default(PENDING)
+  voucherCode  String?     // filled for fulfilled voucher orders
+  emailSent    Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([status])
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FULFILLED
+  FAILED
+  OUT_OF_STOCK
+}

@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>EduPass GH — Admin Preview</title>
+<style>
+:root{--brand50:#eef4ff;--brand600:#1746a2;--brand700:#123a86;--acc:#059669;--acc700:#047857;--accSoft:#e8f5ef;--ink900:#0f172a;--ink700:#334155;--ink500:#64748b;--bg:#f7f9fc;--border:#e6e5e3;--soft:#f0efed;--card:0 1px 3px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.06)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink900);line-height:1.5}
+h1,h2{font-family:'Trebuchet MS',Verdana,sans-serif;letter-spacing:-.02em}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+.svg{width:20px;height:20px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.btn-ghost{display:inline-flex;align-items:center;gap:8px;border-radius:12px;padding:12px 20px;font-size:14px;font-weight:600;min-height:44px;cursor:pointer;background:#fff;color:var(--ink900);border:1px solid var(--border)}
+.card{border-radius:12px;border:1px solid var(--border);background:#fff;box-shadow:var(--card)}
+header{position:sticky;top:0;z-index:40;border-bottom:1px solid var(--border);background:rgba(255,255,255,.92)}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:14px 20px}
+.logo{display:flex;align-items:center;gap:10px}
+.logo .badge{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:var(--brand600);color:#fff}
+.logo .name{font-family:'Trebuchet MS',sans-serif;font-size:18px;font-weight:800}
+.logo .name b{color:var(--brand600)}
+.head{display:flex;align-items:center;justify-content:space-between;padding-top:40px}
+.head p{margin-top:4px;font-size:14px;color:var(--ink500)}
+.kpis{margin-top:24px;display:grid;gap:16px;grid-template-columns:repeat(4,1fr)}
+.kpi{padding:20px}
+.kpi .ic{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:var(--brand50);color:var(--brand600)}
+.kpi .ic.acc{background:var(--accSoft);color:var(--acc700)}
+.kpi .v{margin-top:12px;font-family:'Trebuchet MS',sans-serif;font-size:24px;font-weight:800}
+.kpi .l{font-size:12px;color:var(--ink500)}
+h2.sec{margin-top:40px;font-family:'Trebuchet MS',sans-serif;font-size:18px;font-weight:700}
+.stock{margin-top:16px;display:grid;gap:16px;grid-template-columns:repeat(3,1fr)}
+.st{padding:20px}
+.st .row{display:flex;align-items:center;justify-content:space-between}
+.st .nm{font-size:14px;font-weight:600}
+.badge-low{border-radius:999px;background:#fce9e7;color:#b23b30;padding:2px 10px;font-size:12px;font-weight:600}
+.st .big{margin-top:12px;font-family:'Trebuchet MS',sans-serif;font-size:30px;font-weight:800}
+.st .sub{font-size:12px;color:var(--ink500)}
+table{width:100%;border-collapse:collapse;text-align:left;font-size:14px}
+thead tr{border-bottom:1px solid var(--border);font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink500)}
+th,td{padding:12px 16px}
+tbody tr{border-bottom:1px solid var(--soft)}
+.pill{border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600}
+.pill.ok{background:var(--accSoft);color:var(--acc700)}
+.pill.pend{background:#fbebde;color:#a55a20}
+.pill.fail{background:#fce9e7;color:#b23b30}
+.mono{font-family:Menlo,Consolas,monospace;font-size:12px;color:var(--ink700)}
+.tablewrap{margin-top:16px;overflow-x:auto}
+@media(max-width:860px){.kpis{grid-template-columns:1fr 1fr}.stock{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="wrap nav"><div class="logo"><span class="badge"><svg class="svg" viewBox="0 0 24 24"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1 2.7 2.5 6 2.5s6-1.5 6-2.5v-5"/></svg></span><span class="name">EduPass <b>GH</b></span></div></div></header>
+<main class="wrap">
+  <div class="head">
+    <div><h1 style="font-size:30px;font-weight:800">Dashboard</h1><p>Inventory and recent orders.</p></div>
+    <button class="btn-ghost">Sign out</button>
+  </div>
+  <div class="kpis">
+    <div class="card kpi"><span class="ic"><svg class="svg" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span><p class="v">GH₵2,150.00</p><p class="l">Revenue (fulfilled)</p></div>
+    <div class="card kpi"><span class="ic acc"><svg class="svg" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><p class="v">78</p><p class="l">Fulfilled orders</p></div>
+    <div class="card kpi"><span class="ic"><svg class="svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><p class="v">3</p><p class="l">Pending</p></div>
+    <div class="card kpi"><span class="ic"><svg class="svg" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></span><p class="v">124</p><p class="l">Codes in stock</p></div>
+  </div>
+  <div class="card" style="margin-top:24px;padding:24px">
+    <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px"><h2 style="font-family:'Trebuchet MS',sans-serif;font-size:18px;font-weight:700">Revenue over time</h2><div style="display:flex;align-items:center;gap:12px"><span style="font-size:12px;color:var(--ink500)">Fulfilled orders</span><div style="display:inline-flex;border:1px solid var(--border);border-radius:12px;padding:2px"><span style="border-radius:8px;background:var(--brand600);color:#fff;padding:6px 12px;font-size:12px;font-weight:600">Daily</span><span style="border-radius:8px;color:var(--ink700);padding:6px 12px;font-size:12px;font-weight:600">Weekly</span></div></div></div>
+    <p style="margin-top:4px;font-size:14px;color:var(--ink500)"><span style="font-family:'Trebuchet MS',sans-serif;font-size:20px;font-weight:800;color:var(--ink900)">GH₵2,150.00</span> total over 14 days</p>
+    <svg viewBox="0 0 720 180" style="margin-top:12px;width:100%" role="img" aria-label="Daily revenue bar chart">
+      <g fill="#1746a2">
+        <rect x="8"   y="120" width="45" height="36"  rx="3"/>
+        <rect x="59"  y="96"  width="45" height="60"  rx="3"/>
+        <rect x="110" y="140" width="45" height="16"  rx="3"/>
+        <rect x="161" y="72"  width="45" height="84"  rx="3"/>
+        <rect x="212" y="48"  width="45" height="108" rx="3"/>
+        <rect x="263" y="108" width="45" height="48"  rx="3"/>
+        <rect x="314" y="84"  width="45" height="72"  rx="3"/>
+        <rect x="365" y="60"  width="45" height="96"  rx="3"/>
+        <rect x="416" y="132" width="45" height="24"  rx="3"/>
+        <rect x="467" y="96"  width="45" height="60"  rx="3"/>
+        <rect x="518" y="36"  width="45" height="120" rx="3"/>
+        <rect x="569" y="72"  width="45" height="84"  rx="3"/>
+        <rect x="620" y="108" width="45" height="48"  rx="3"/>
+        <rect x="671" y="48"  width="41" height="108" rx="3"/>
+      </g>
+      <g fill="#64748b" font-size="10" text-anchor="middle">
+        <text x="30"  y="174">06-28</text>
+        <text x="183" y="174">07-01</text>
+        <text x="336" y="174">07-04</text>
+        <text x="489" y="174">07-07</text>
+        <text x="642" y="174">07-10</text>
+      </g>
+    </svg>
+  </div>
+  <h2 class="sec">Voucher stock</h2>
+  <div class="stock">
+    <div class="card st"><div class="row"><span class="nm">WASSCE Checker Voucher</span></div><p class="big">86</p><p class="sub">available · 42 sold</p></div>
+    <div class="card st"><div class="row"><span class="nm">Private WASSCE Voucher</span></div><p class="big">34</p><p class="sub">available · 18 sold</p></div>
+    <div class="card st"><div class="row"><span class="nm">BECE Checker Voucher</span><span class="badge-low">Low</span></div><p class="big">4</p><p class="sub">available · 18 sold</p></div>
+  </div>
+  <div style="margin-top:40px;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px">
+    <h2 style="font-family:'Trebuchet MS',sans-serif;font-size:18px;font-weight:700">Recent orders</h2>
+    <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px">
+      <div><label style="display:block;font-size:12px;font-weight:600;color:var(--ink500)">From</label><input type="date" value="2026-07-01" style="margin-top:4px;border-radius:12px;border:1px solid var(--border);padding:8px 12px;font-size:14px"></div>
+      <div><label style="display:block;font-size:12px;font-weight:600;color:var(--ink500)">To</label><input type="date" value="2026-07-11" style="margin-top:4px;border-radius:12px;border:1px solid var(--border);padding:8px 12px;font-size:14px"></div>
+      <div><label style="display:block;font-size:12px;font-weight:600;color:var(--ink500)">Product</label><select style="margin-top:4px;border-radius:12px;border:1px solid var(--border);background:#fff;padding:8px 12px;font-size:14px"><option>All products</option><option>WASSCE Checker Voucher</option><option>BECE Checker Voucher</option></select></div>
+      <div><label style="display:block;font-size:12px;font-weight:600;color:var(--ink500)">Status</label><select style="margin-top:4px;border-radius:12px;border:1px solid var(--border);background:#fff;padding:8px 12px;font-size:14px"><option>All statuses</option><option>FULFILLED</option><option>PENDING</option></select></div>
+      <button style="border-radius:12px;background:var(--brand600);color:#fff;border:0;padding:10px 18px;font-size:14px;font-weight:600;min-height:44px;cursor:pointer">Apply</button>
+      <button class="btn-ghost">Clear</button>
+      <button class="btn-ghost"><svg class="svg" style="width:16px;height:16px" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg> Export CSV</button>
+      <button class="btn-ghost"><svg class="svg" style="width:16px;height:16px" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg> Export summary</button>
+    </div>
+  </div>
+  <p style="margin-top:8px;font-size:12px;color:var(--ink500)">Showing 4 orders from 2026-07-01 to 2026-07-11.</p>
+  <div class="card tablewrap" style="margin-top:16px">
+    <table>
+      <thead><tr><th>Date</th><th>Product</th><th>Email</th><th>Amount</th><th>Status</th><th>Code</th></tr></thead>
+      <tbody>
+        <tr><td style="color:var(--ink500);white-space:nowrap">11 Jul, 15:32</td><td>WASSCE Checker Voucher</td><td style="color:var(--ink700)">ama@example.com</td><td style="font-weight:600;white-space:nowrap">GH₵25.00</td><td><span class="pill ok">FULFILLED</span></td><td class="mono">WAS-1002-BBBB-2222</td></tr>
+        <tr><td style="color:var(--ink500);white-space:nowrap">11 Jul, 15:20</td><td>University Admission Form</td><td style="color:var(--ink700)">kofi@example.com</td><td style="font-weight:600;white-space:nowrap">GH₵300.00</td><td><span class="pill ok">FULFILLED</span></td><td class="mono">—</td></tr>
+        <tr><td style="color:var(--ink500);white-space:nowrap">11 Jul, 15:07</td><td>BECE Checker Voucher</td><td style="color:var(--ink700)">selorm@example.com</td><td style="font-weight:600;white-space:nowrap">GH₵25.00</td><td><span class="pill pend">PENDING</span></td><td class="mono">—</td></tr>
+        <tr><td style="color:var(--ink500);white-space:nowrap">11 Jul, 14:51</td><td>WASSCE Checker Voucher</td><td style="color:var(--ink700)">yaa@example.com</td><td style="font-weight:600;white-space:nowrap">GH₵25.00</td><td><span class="pill fail">OUT_OF_STOCK</span></td><td class="mono">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div style="height:48px"></div>
+</main>
+</body>
+</html>

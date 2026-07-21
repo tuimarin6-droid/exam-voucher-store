@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>EduPass GH — Design Preview</title>
+<style>
+:root{
+  --brand50:#eef4ff;--brand100:#d9e6ff;--brand600:#1746a2;--brand700:#123a86;
+  --acc:#059669;--acc700:#047857;--accSoft:#e8f5ef;
+  --ink900:#0f172a;--ink700:#334155;--ink500:#64748b;
+  --bg:#f7f9fc;--border:#e6e5e3;--soft:#f0efed;
+  --card:0 1px 3px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink900);line-height:1.5}
+h1,h2,h3{font-family:'Trebuchet MS',Verdana,sans-serif;letter-spacing:-.02em}
+a{text-decoration:none;color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+.svg{width:20px;height:20px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;padding:12px 20px;font-size:14px;font-weight:600;min-height:44px;cursor:pointer;transition:all .2s;border:0}
+.btn-primary{background:var(--brand600);color:#fff;box-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 12px rgba(0,0,0,.04)}
+.btn-primary:hover{background:var(--brand700)}
+.btn-accent{background:var(--acc);color:#fff}
+.btn-accent:hover{background:var(--acc700)}
+.btn-ghost{background:#fff;color:var(--ink900);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--soft)}
+.card{border-radius:12px;border:1px solid var(--border);background:#fff;box-shadow:var(--card)}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;background:var(--brand50);padding:5px 12px;font-size:12px;font-weight:600;color:var(--brand700)}
+.secure{display:inline-flex;align-items:center;gap:6px;border-radius:999px;background:var(--accSoft);padding:5px 12px;font-size:12px;font-weight:600;color:var(--acc700)}
+.muted{color:var(--ink500)}
+.small{font-size:14px}
+
+/* nav */
+header{position:sticky;top:0;z-index:40;border-bottom:1px solid var(--border);background:rgba(255,255,255,.92);backdrop-filter:blur(8px)}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:14px 20px}
+.logo{display:flex;align-items:center;gap:10px}
+.logo .badge{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:var(--brand600);color:#fff}
+.logo .name{font-family:'Trebuchet MS',sans-serif;font-size:18px;font-weight:800}
+.logo .name b{color:var(--brand600)}
+.nav .links{display:flex;align-items:center;gap:16px}
+.nav .links a{font-size:14px;font-weight:600;color:var(--ink700)}
+.nav .links a:hover{color:var(--brand600)}
+
+/* hero */
+.hero{background:linear-gradient(to bottom,var(--brand50),var(--bg));padding:72px 0}
+.hero .inner{max-width:640px;margin:0 auto;text-align:center}
+.hero h1{font-size:48px;font-weight:800;line-height:1.1;margin-top:20px}
+.hero h1 span{color:var(--brand600)}
+.hero p{margin:16px auto 0;max-width:520px;color:var(--ink700)}
+.hero .cta{margin-top:28px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.stars{display:inline-flex;color:var(--acc)}
+.rating{margin-top:24px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;color:var(--ink500)}
+
+/* trust strip */
+.strip{margin-top:-24px}
+.grid3{display:grid;gap:16px;grid-template-columns:repeat(3,1fr)}
+.tcard{display:flex;gap:12px;align-items:flex-start;padding:20px}
+.tcard .ic{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:var(--brand50);color:var(--brand600);flex:none}
+.tcard p.t{font-weight:600}
+.tcard p.d{margin-top:2px;font-size:14px;color:var(--ink500)}
+
+/* section */
+section.pad{padding:64px 0}
+.section-head{max-width:560px;margin-bottom:32px}
+.section-head h2{font-size:30px;font-weight:800}
+.section-head p{margin-top:8px;color:var(--ink500)}
+
+/* products */
+.grid4{display:grid;gap:24px;grid-template-columns:repeat(4,1fr)}
+.pcard{display:flex;flex-direction:column;padding:24px}
+.pcard .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.pcard .ic{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:var(--brand50);color:var(--brand600)}
+.pcard .ic.form{background:var(--accSoft);color:var(--acc700)}
+.pcard h3{margin-top:16px;font-size:18px;font-weight:700}
+.pcard .desc{margin-top:6px;font-size:14px;color:var(--ink500)}
+.pcard ul{list-style:none;margin-top:16px;display:flex;flex-direction:column;gap:8px}
+.pcard li{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink700)}
+.pcard li .tick{display:grid;place-items:center;width:20px;height:20px;border-radius:999px;background:var(--accSoft);color:var(--acc700);flex:none}
+.pcard .foot{margin-top:24px;display:flex;align-items:flex-end;justify-content:space-between;border-top:1px solid var(--soft);padding-top:20px}
+.pcard .price{font-family:'Trebuchet MS',sans-serif;font-size:24px;font-weight:800}
+.pcard .price small{font-size:12px;font-weight:400;color:var(--ink500);margin-left:4px}
+
+/* checkout */
+.co-wrap{background:#fff}
+.co-grid{display:grid;gap:32px;grid-template-columns:1fr 360px;margin-top:32px}
+.opt{display:flex;align-items:center;justify-content:space-between;border-radius:12px;border:1px solid var(--border);background:#fff;padding:12px 16px;text-align:left;cursor:pointer}
+.opt.sel{border-color:var(--brand600);background:var(--brand50)}
+.opt .nm{font-size:14px;font-weight:600}
+.opt .pr{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700}
+.opt .selmark{display:grid;place-items:center;width:20px;height:20px;border-radius:999px;background:var(--brand600);color:#fff}
+label.lbl{display:block;font-size:14px;font-weight:600}
+input.field{margin-top:8px;width:100%;border-radius:12px;border:1px solid var(--border);padding:12px 16px;font-size:14px;outline:none}
+input.field:focus{border-color:var(--brand600);box-shadow:0 0 0 3px rgba(47,102,246,.25)}
+.summary li{list-style:none}
+
+/* footer */
+footer{border-top:1px solid var(--border);background:#fff}
+.fgrid{display:flex;gap:24px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.fmeta{display:flex;flex-direction:column;gap:8px;font-size:14px;color:var(--ink700)}
+.fmeta span{display:inline-flex;align-items:center;gap:8px}
+.copyright{margin-top:32px;border-top:1px solid var(--soft);padding-top:24px;font-size:12px;color:var(--ink500)}
+
+@media(max-width:860px){
+  .grid3,.grid4{grid-template-columns:1fr}
+  .co-grid{grid-template-columns:1fr}
+  .hero h1{font-size:34px}
+  .hero{padding:48px 0}
+  .nav .links a{display:none}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap nav">
+    <div class="logo">
+      <span class="badge"><svg class="svg" viewBox="0 0 24 24"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1 2.7 2.5 6 2.5s6-1.5 6-2.5v-5"/></svg></span>
+      <span class="name">EduPass <b>GH</b></span>
+    </div>
+    <div class="links">
+      <a href="#products">Vouchers</a>
+      <a href="#how">How it works</a>
+      <span class="secure"><svg class="svg" style="width:14px;height:14px" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Secure</span>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap inner">
+    <span class="chip"><svg class="svg" style="width:14px;height:14px" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg> Trusted by students across Ghana</span>
+    <h1>Exam vouchers, delivered <span>instantly.</span></h1>
+    <p>Buy WASSCE, Private WASSCE and BECE result checker vouchers online and get your PIN in seconds. Need a university admission form? We’ll guide you personally on WhatsApp.</p>
+    <div class="cta">
+      <a href="#products" class="btn btn-primary">Browse vouchers</a>
+      <a href="#how" class="btn btn-ghost">How it works</a>
+    </div>
+    <div class="rating">
+      <span class="stars" id="stars"></span>
+      <span>Rated 4.9/5 by 2,300+ buyers</span>
+    </div>
+  </div>
+</section>
+
+<div class="wrap strip">
+  <div class="grid3">
+    <div class="card tcard"><span class="ic"><svg class="svg" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></span><div><p class="t">Instant delivery</p><p class="d">Voucher PINs appear on-screen and hit your inbox seconds after payment.</p></div></div>
+    <div class="card tcard"><span class="ic"><svg class="svg" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span><div><p class="t">Verified payments</p><p class="d">Every transaction is confirmed server-side with Paystack before release.</p></div></div>
+    <div class="card tcard"><span class="ic"><svg class="svg" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span><div><p class="t">Secure by design</p><p class="d">We never see your card details. Payments are handled by Paystack.</p></div></div>
+  </div>
+</div>
+
+<section class="pad wrap" id="products">
+  <div class="section-head">
+    <h2>Choose your voucher</h2>
+    <p>All vouchers are single-use official result-checker PINs. Delivered instantly after payment.</p>
+  </div>
+  <div class="grid4" id="cards"></div>
+</section>
+
+<div class="co-wrap">
+  <section class="pad wrap" style="max-width:960px">
+    <div class="section-head"><h2>Checkout</h2></div>
+    <div class="co-grid">
+      <div class="card" style="padding:24px">
+        <label class="lbl">Product</label>
+        <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px">
+          <button class="opt sel"><span class="nm">WASSCE Checker Voucher</span><span class="pr">GH₵25.00 <span class="selmark"><svg class="svg" style="width:13px;height:13px" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span></span></button>
+          <button class="opt"><span class="nm">BECE Checker Voucher</span><span class="pr">GH₵25.00</span></button>
+          <button class="opt"><span class="nm">University Admission Form</span><span class="pr">GH₵300.00</span></button>
+        </div>
+        <div style="margin-top:24px">
+          <label class="lbl">Email address</label>
+          <input class="field" type="email" placeholder="you@example.com">
+          <p class="small muted" style="margin-top:6px">Your voucher / receipt will be sent here.</p>
+        </div>
+        <button class="btn btn-primary" style="margin-top:24px;width:100%">Pay GH₵25.00 securely <svg class="svg" style="width:16px;height:16px" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
+        <p class="small muted" style="margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px"><svg class="svg" style="width:14px;height:14px" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Secured by Paystack. We never store card details.</p>
+      </div>
+      <aside class="card" style="padding:24px;align-self:start">
+        <p style="font-family:'Trebuchet MS',sans-serif;font-size:16px;font-weight:700">Order summary</p>
+        <div style="margin-top:16px;display:flex;justify-content:space-between;font-size:14px"><span class="muted">WASSCE Checker Voucher</span><span style="font-weight:600">GH₵25.00</span></div>
+        <div style="margin-top:12px;display:flex;justify-content:space-between;border-top:1px solid var(--soft);padding-top:12px"><span style="font-weight:600">Total</span><span style="font-family:'Trebuchet MS',sans-serif;font-size:20px;font-weight:800">GH₵25.00</span></div>
+        <ul style="margin-top:20px;display:flex;flex-direction:column;gap:10px;font-size:14px;color:var(--ink700)">
+          <li class="summary" style="display:flex;align-items:center;gap:8px"><svg class="svg" style="width:16px;height:16px;color:var(--acc)" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg> Server-verified payment</li>
+          <li class="summary" style="display:flex;align-items:center;gap:8px"><svg class="svg" style="width:16px;height:16px;color:var(--acc)" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg> Instant voucher + email</li>
+        </ul>
+      </aside>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap" style="padding:40px 20px">
+    <div class="fgrid">
+      <div style="max-width:420px"><p style="font-family:'Trebuchet MS',sans-serif;font-size:16px;font-weight:700">EduPass GH</p><p class="small muted" style="margin-top:4px">Instant WASSCE, Private WASSCE and BECE result checker vouchers, plus assisted university admission form purchases.</p></div>
+      <div class="fmeta">
+        <span><svg class="svg" style="width:16px;height:16px" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg> support@edupassgh.com</span>
+        <span style="color:var(--acc700)"><svg class="svg" style="width:16px;height:16px" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Payments secured by Paystack</span>
+      </div>
+    </div>
+    <p class="copyright">© 2026 EduPass GH. Not affiliated with WAEC. Vouchers are official result-checker PINs resold for convenience.</p>
+  </div>
+</footer>
+
+<script>
+const star='<svg class="svg" style="width:16px;height:16px;fill:currentColor;stroke:none" viewBox="0 0 24 24"><path d="m12 2 3 6.5 7 .9-5 4.9 1.2 7L12 18l-6.4 3.3L6.8 14.3l-5-4.9 7-.9L12 2z"/></svg>';
+document.getElementById('stars').innerHTML=star.repeat(5);
+const bolt='<svg class="svg" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>';
+const wa='<svg class="svg" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg>';
+const tick='<svg class="svg" style="width:13px;height:13px" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>';
+const arrow='<svg class="svg" style="width:16px;height:16px" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>';
+const hl=['Instant delivery','Emailed automatically','Single-use PIN'];
+const hlF=['Personal WhatsApp support','Form sent manually after payment','Guided application help'];
+const products=[
+  {n:'WASSCE Checker Voucher',d:'Official WASSCE results checker voucher (school candidates). Delivered instantly after payment.',p:'GH₵25.00',b:'Most popular',f:false},
+  {n:'Private WASSCE Checker Voucher',d:'WASSCE results checker voucher for private / GBCE candidates. Delivered instantly after payment.',p:'GH₵25.00',b:'',f:false},
+  {n:'BECE Checker Voucher',d:'Official BECE results checker voucher. Delivered instantly after payment.',p:'GH₵25.00',b:'',f:false},
+  {n:'University Admission Form',d:"Purchase a university admission form. After payment you'll be connected on WhatsApp so we can send your form and guide you.",p:'GH₵300.00',b:'Assisted',f:true},
+];
+document.getElementById('cards').innerHTML=products.map(p=>`
+  <div class="card pcard">
+    <div class="top">
+      <span class="ic ${p.f?'form':''}">${p.f?wa:bolt}</span>
+      ${p.b?`<span class="chip">${p.b}</span>`:''}
+    </div>
+    <h3>${p.n}</h3>
+    <p class="desc">${p.d}</p>
+    <ul>${(p.f?hlF:hl).map(h=>`<li><span class="tick">${tick}</span>${h}</li>`).join('')}</ul>
+    <div class="foot">
+      <div class="price">${p.p}<small>one-time</small></div>
+      <a href="#" class="btn ${p.f?'btn-accent':'btn-primary'}">Buy now ${arrow}</a>
+    </div>
+  </div>`).join('');
+</script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+// ---------------------------------------------------------------------------
+// PRODUCTION SCHEMA (PostgreSQL)
+//
+// To switch from SQLite to Postgres:
+//   1) Replace prisma/schema.prisma with this file's contents
+//      (or copy this over it).
+//   2) Set DATABASE_URL in .env to your Postgres connection string, e.g.
+//      DATABASE_URL="postgresql://user:pass@host:5432/edupass?schema=public"
+//   3) Run:  npx prisma migrate dev --name init
+//
+// Everything else in the app is identical \u2014 the atomic dispensing logic,
+// idempotency, and webhook flow all work the same on Postgres.
+// ---------------------------------------------------------------------------
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Voucher {
+  id          String        @id @default(cuid())
+  productType String
+  code        String        @unique
+  status      VoucherStatus @default(AVAILABLE)
+  soldTo      String?
+  reference   String?
+  soldAt      DateTime?
+  createdAt   DateTime      @default(now())
+
+  @@index([productType, status])
+  @@index([reference])
+}
+
+enum VoucherStatus {
+  AVAILABLE
+  RESERVED
+  SOLD
+}
+
+model Order {
+  id           String      @id @default(cuid())
+  reference    String      @unique
+  email        String
+  phone        String?
+  productType  String
+  category     String
+  amount       Int
+  currency     String      @default("GHS")
+  status       OrderStatus @default(PENDING)
+  voucherCode  String?
+  emailSent    Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([status])
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FULFILLED
+  FAILED
+  OUT_OF_STOCK
+}
