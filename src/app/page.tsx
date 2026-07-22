@@ -30,6 +30,11 @@ export default function HomePage() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-brand-50 to-[#f7f9fc]" />
+        {/* Student celebration photo background (Opoku Ware) */}
+<div aria-hidden="true" className="hero-photo -z-10">
+  <img src="/student-owass.png" alt="" />
+  <span className="hero-photo-veil" />
+</div>
 
         {/* Branded motion graphic: graduation & 8 A1s celebration (no photos) */}
         <div aria-hidden="true" className="hero-decor -z-10">
