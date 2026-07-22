@@ -140,7 +140,7 @@ body {
   height: 100%;
   object-fit: cover;
   object-position: center 28%;
-  opacity: .55;
+  opacity: .75;
   animation: heroZoom 20s ease-in-out infinite;
 }
 .hero-photo-veil {
