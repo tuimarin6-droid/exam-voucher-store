@@ -2,7 +2,11 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getProduct } from "@/lib/products";
-import { initializeTransaction, newReference } from "@/lib/paystack";
+import {
+  initializeTransaction,
+  newReference,
+  withPaystackFee,
+} from "@/lib/paystack";
 import { countAvailable } from "@/lib/inventory";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +27,10 @@ export async function POST(req: Request) {
   try {
     parsed = bodySchema.parse(await req.json());
   } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid request body" },
+      { status: 400 },
+    );
   }
 
   const product = getProduct(parsed.productId);
@@ -36,7 +43,10 @@ export async function POST(req: Request) {
   if (product.category === "VOUCHER") {
     const available = await countAvailable(product.voucherType!);
     if (available <= 0) {
-      return NextResponse.json({ error: "This voucher is currently out of stock." }, { status: 409 });
+      return NextResponse.json(
+        { error: "This voucher is currently out of stock." },
+        { status: 409 },
+      );
     }
   }
 
@@ -58,18 +68,29 @@ export async function POST(req: Request) {
   });
 
   try {
+    // Charge the customer the fee-inclusive total so YOUR payout equals the
+    // sticker price. The recorded order.amount stays at the sticker price.
     const init = await initializeTransaction({
       email: parsed.email,
-      amount: product.amount,
+      amount: withPaystackFee(product.amount),
       currency: product.currency,
       reference,
       callbackUrl,
       metadata: { productId: product.id, category: product.category },
     });
-    return NextResponse.json({ authorizationUrl: init.authorization_url, reference });
+    return NextResponse.json({
+      authorizationUrl: init.authorization_url,
+      reference,
+    });
   } catch (err) {
     console.error("[initialize] paystack error:", err);
-    await prisma.order.update({ where: { reference }, data: { status: "FAILED" } });
-    return NextResponse.json({ error: "Could not start payment. Try again." }, { status: 502 });
+    await prisma.order.update({
+      where: { reference },
+      data: { status: "FAILED" },
+    });
+    return NextResponse.json(
+      { error: "Could not start payment. Try again." },
+      { status: 502 },
+    );
   }
 }
