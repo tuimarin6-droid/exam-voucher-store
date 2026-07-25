@@ -1,13 +1,5 @@
-import sgMail from "@sendgrid/mail";
-
-let configured = false;
-function ensureConfigured() {
-  if (configured) return;
-  const key = process.env.SENDGRID_API_KEY;
-  if (!key) throw new Error("SENDGRID_API_KEY is not set");
-  sgMail.setApiKey(key);
-  configured = true;
-}
+// Sends transactional emails via Brevo's HTTP API (https://www.brevo.com).
+// Uses a direct fetch call, so no extra npm package is required.
 
 export async function sendVoucherEmail(params: {
   to: string;
@@ -15,19 +7,35 @@ export async function sendVoucherEmail(params: {
   code: string;
   reference: string;
 }): Promise<void> {
-  ensureConfigured();
   const { to, productName, code, reference } = params;
+
+  const apiKey = process.env.BREVO_API_KEY;
+  if (!apiKey) throw new Error("BREVO_API_KEY is not set");
+
   const fromEmail = process.env.MAIL_FROM_EMAIL;
   const fromName = process.env.MAIL_FROM_NAME || "EduPass GH";
   if (!fromEmail) throw new Error("MAIL_FROM_EMAIL is not set");
 
-  await sgMail.send({
-    to,
-    from: { email: fromEmail, name: fromName },
-    subject: `Your ${productName} \u2014 voucher code inside`,
-    text: `Thank you for your purchase!\n\nProduct: ${productName}\nVoucher code / PIN: ${code}\nReference: ${reference}\n\nKeep this code safe. It is single-use.`,
-    html: voucherEmailHtml({ productName, code, reference, fromName }),
+  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      "api-key": apiKey,
+      "Content-Type": "application/json",
+      accept: "application/json",
+    },
+    body: JSON.stringify({
+      sender: { email: fromEmail, name: fromName },
+      to: [{ email: to }],
+      subject: `Your ${productName} \u2014 voucher code inside`,
+      textContent: `Thank you for your purchase!\n\nProduct: ${productName}\nVoucher code / PIN: ${code}\nReference: ${reference}\n\nKeep this code safe. It is single-use.`,
+      htmlContent: voucherEmailHtml({ productName, code, reference, fromName }),
+    }),
   });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`Brevo email failed: ${res.status} ${body}`);
+  }
 }
 
 function voucherEmailHtml(p: {
