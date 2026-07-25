@@ -43,8 +43,10 @@ function SuccessInner() {
       {state === "loading" && (
         <div className="card p-8 text-center">
           <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-brand-100 border-t-brand-600" />
-          <p className="mt-4 font-600 text-ink-900">Verifying your payment\u2026</p>
-          <p className="mt-1 text-sm text-ink-500">Confirming securely with Paystack. This takes a moment.</p>
+          <p className="mt-4 font-600 text-ink-900">Verifying your payment…</p>
+          <p className="mt-1 text-sm text-ink-500">
+            Confirming securely with Paystack. This takes a moment.
+          </p>
         </div>
       )}
 
@@ -53,14 +55,26 @@ function SuccessInner() {
           <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-accent-500/10 text-accent-700">
             <Check width={28} height={28} />
           </span>
-          <h1 className="mt-4 font-display text-2xl font-800 text-ink-900">Payment successful</h1>
-          <p className="mt-1 text-sm text-ink-500">Here is your {result.productName}. We\u2019ve also emailed it to you.</p>
+          <h1 className="mt-4 font-display text-2xl font-800 text-ink-900">
+            Payment successful
+          </h1>
+          <p className="mt-1 text-sm text-ink-500">
+            Here is your {result.productName}. We’ve also emailed it to you.
+          </p>
           <div className="mt-6 rounded-xl border border-dashed border-brand-600 bg-brand-50 p-6">
-            <p className="text-xs font-700 uppercase tracking-wider text-brand-700">Voucher code / PIN</p>
-            <p className="mt-2 select-all font-display text-3xl font-800 tracking-wider text-ink-900">{result.voucherCode}</p>
+            <p className="text-xs font-700 uppercase tracking-wider text-brand-700">
+              Voucher code / PIN
+            </p>
+            <p className="mt-2 select-all font-display text-3xl font-800 tracking-wider text-ink-900">
+              {result.voucherCode}
+            </p>
           </div>
-          <p className="mt-4 text-xs text-ink-500">Reference: {result.reference}</p>
-          <Link href="/" className="btn-ghost mt-6">Back to store</Link>
+          <p className="mt-4 text-xs text-ink-500">
+            Reference: {result.reference}
+          </p>
+          <Link href="/" className="btn-ghost mt-6">
+            Back to store
+          </Link>
         </div>
       )}
 
@@ -69,40 +83,65 @@ function SuccessInner() {
           <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-accent-500/10 text-accent-700">
             <Check width={28} height={28} />
           </span>
-          <h1 className="mt-4 font-display text-2xl font-800 text-ink-900">Payment received</h1>
+          <h1 className="mt-4 font-display text-2xl font-800 text-ink-900">
+            Payment received
+          </h1>
           <p className="mt-1 text-sm text-ink-500">
-            Tap below to message us on WhatsApp. Your reference is pre-filled so we can send your form right away.
+            Tap below to message us on WhatsApp. Your reference is pre-filled so
+            we can send your form right away.
           </p>
-          <a href={result.whatsappUrl} target="_blank" rel="noopener noreferrer" className="btn-accent mt-6 w-full">
+          <a
+            href={result.whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-accent mt-6 w-full"
+          >
             <MessageCircle width={18} height={18} /> Continue on WhatsApp
           </a>
-          <p className="mt-4 text-xs text-ink-500">Reference: {result.reference}</p>
+          <p className="mt-4 text-xs text-ink-500">
+            Reference: {result.reference}
+          </p>
         </div>
       )}
 
       {state === "done" && result && !result.ok && (
         <div className="card p-8 text-center">
-          <h1 className="font-display text-xl font-800 text-ink-900">We couldn\u2019t confirm this yet</h1>
+          <h1 className="font-display text-xl font-800 text-ink-900">
+            We couldn’t confirm this yet
+          </h1>
           <p className="mt-2 text-sm text-ink-500">
             {result.status === "OUT_OF_STOCK"
-              ? "Your payment was received but stock just ran out. We\u2019ll sort this out and email you \u2014 please contact support with your reference."
-              : "If you were charged, don\u2019t worry \u2014 our system will finish automatically. Keep your reference safe."}
+              ? "Your payment was received but stock just ran out. We’ll sort this out and email you — please contact support with your reference."
+              : "If you were charged, don’t worry — our system will finish automatically. Keep your reference safe."}
           </p>
-          {result.reference && <p className="mt-4 text-xs text-ink-500">Reference: {result.reference}</p>}
-          <Link href="/" className="btn-ghost mt-6">Back to store</Link>
+          {result.reference && (
+            <p className="mt-4 text-xs text-ink-500">
+              Reference: {result.reference}
+            </p>
+          )}
+          <Link href="/" className="btn-ghost mt-6">
+            Back to store
+          </Link>
         </div>
       )}
 
       {state === "error" && (
         <div className="card p-8 text-center">
-          <h1 className="font-display text-xl font-800 text-ink-900">Missing payment reference</h1>
-          <p className="mt-2 text-sm text-ink-500">We couldn\u2019t find a transaction to verify.</p>
-          <Link href="/" className="btn-ghost mt-6">Back to store</Link>
+          <h1 className="font-display text-xl font-800 text-ink-900">
+            Missing payment reference
+          </h1>
+          <p className="mt-2 text-sm text-ink-500">
+            We couldn’t find a transaction to verify.
+          </p>
+          <Link href="/" className="btn-ghost mt-6">
+            Back to store
+          </Link>
         </div>
       )}
 
       <p className="mt-6 flex items-center justify-center gap-2 text-xs text-ink-500">
-        <ShieldCheck width={14} height={14} /> Verified server-side with Paystack
+        <ShieldCheck width={14} height={14} /> Verified server-side with
+        Paystack
       </p>
     </div>
   );
@@ -112,7 +151,13 @@ export default function SuccessPage() {
   return (
     <>
       <Navbar />
-      <Suspense fallback={<div className="mx-auto max-w-xl px-5 py-16 text-center text-ink-500">Loading\u2026</div>}>
+      <Suspense
+        fallback={
+          <div className="mx-auto max-w-xl px-5 py-16 text-center text-ink-500">
+            Loading…
+          </div>
+        }
+      >
         <SuccessInner />
       </Suspense>
       <Footer />
