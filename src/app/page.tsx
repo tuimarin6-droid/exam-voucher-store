@@ -1,8 +1,9 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
+import { HeroScene } from "@/components/HeroScene";
 import { PRODUCTS } from "@/lib/products";
-import { Bolt, Clock, GraduationCap, Lock, Mail, ShieldCheck, Star } from "@/components/icons";
+import { Bolt, Clock, Lock, Mail, ShieldCheck, Star } from "@/components/icons";
 
 const trust = [
   { icon: Bolt, title: "Instant delivery", body: "Voucher PINs appear on-screen and hit your inbox seconds after payment." },
@@ -36,21 +37,11 @@ export default function HomePage() {
   <span className="hero-photo-veil" />
 </div>
 
-        {/* Branded motion graphic: graduation & 8 A1s celebration (no photos) */}
+        {/* Branded motion graphic: soft glows + 3D graduation/voucher scene */}
         <div aria-hidden="true" className="hero-decor -z-10">
           <span className="hero-glow hero-glow-1" />
           <span className="hero-glow hero-glow-2" />
-          {[
-            { left: "7%", top: "18%", delay: "0s", size: 30 },
-            { left: "20%", top: "62%", delay: "1.2s", size: 22 },
-            { left: "82%", top: "22%", delay: "0.6s", size: 34 },
-            { left: "90%", top: "60%", delay: "1.8s", size: 24 },
-            { left: "48%", top: "12%", delay: "2.4s", size: 20 },
-          ].map((c, i) => (
-            <span key={`cap-${i}`} className="hero-cap" style={{ left: c.left, top: c.top, animationDelay: c.delay }}>
-              <GraduationCap width={c.size} height={c.size} />
-            </span>
-          ))}
+          <HeroScene />
           {[0, 1, 2].map((i) => (
             <span
               key={`grade-${i}`}
