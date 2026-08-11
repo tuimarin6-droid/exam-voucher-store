@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { dispenseVouchers } from "./inventory";
 import { recordPromoRedemption } from "./promos";
 import { sendVoucherEmail } from "@/lib/email";
+import { getProduct } from "@/lib/products";
 
 export async function fulfilByReference(reference: string) {
   const order = await prisma.order.findUnique({
@@ -12,9 +13,19 @@ export async function fulfilByReference(reference: string) {
     throw new Error(`Order not found: ${reference}`);
   }
 
-  // Prevent double fulfilment if already processed
+  const product = getProduct(order.productType);
+  const productName = product?.name ?? order.productType;
+
+  // Handle already fulfilled order idempotently
   if (order.status === "SUCCESS" || order.status === "COMPLETED") {
-    return order;
+    return {
+      ok: true,
+      status: order.status,
+      category: order.category,
+      email: order.email,
+      productName,
+      reference: order.reference,
+    };
   }
 
   // 1. Dispense vouchers from available inventory
@@ -50,7 +61,7 @@ export async function fulfilByReference(reference: string) {
   });
 
   // 4. Mark the order as completed
-  const updatedOrder = await prisma.order.update({
+  await prisma.order.update({
     where: { reference },
     data: {
       status: "SUCCESS",
@@ -58,5 +69,13 @@ export async function fulfilByReference(reference: string) {
     },
   });
 
-  return updatedOrder;
+  return {
+    ok: true,
+    status: "SUCCESS",
+    category: order.category,
+    email: order.email,
+    productName,
+    vouchers,
+    reference: order.reference,
+  };
 }
