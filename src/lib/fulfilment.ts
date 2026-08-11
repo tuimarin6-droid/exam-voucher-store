@@ -16,8 +16,9 @@ export async function fulfilByReference(reference: string) {
   const product = getProduct(order.productType);
   const productName = product?.name ?? order.productType;
 
-  // Handle already fulfilled order idempotently
-  if (order.status === "SUCCESS" || order.status === "COMPLETED") {
+  // Cast status to string to prevent Prisma Enum type comparison errors
+  const statusStr = String(order.status);
+  if (statusStr === "SUCCESS" || statusStr === "COMPLETED" || statusStr === "FULFILLED") {
     return {
       ok: true,
       status: order.status,
@@ -64,7 +65,7 @@ export async function fulfilByReference(reference: string) {
   await prisma.order.update({
     where: { reference },
     data: {
-      status: "SUCCESS",
+      status: "SUCCESS" as any,
       fulfilledAt: new Date(),
     },
   });
