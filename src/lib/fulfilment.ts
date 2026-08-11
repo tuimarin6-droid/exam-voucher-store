@@ -103,4 +103,17 @@ export async function fulfilByReference(reference: string) {
       ok: true,
       status: "FULFILLED",
       category: order.category,
-      email:
+      email: order.email,
+      productName,
+      voucherCode: codes[0],
+      voucherCodes: codes,
+      reference: order.reference,
+    };
+  } catch (err) {
+    if (err instanceof OutOfStockError) {
+      await prisma.order.update({ where: { reference }, data: { status: "OUT_OF_STOCK" } });
+      return { ok: false, status: "OUT_OF_STOCK", category: order.category, email: order.email, productName, reference: order.reference };
+    }
+    throw err;
+  }
+}
