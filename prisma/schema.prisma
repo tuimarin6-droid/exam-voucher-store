@@ -1,6 +1,6 @@
+```prisma
 // Prisma schema for the exam voucher store.
-// Default: SQLite (zero-config). For production, switch provider to
-// "postgresql" or "mysql" and update DATABASE_URL.
+// PostgreSQL production database.
 
 generator client {
   provider = "prisma-client-js"
@@ -23,8 +23,12 @@ model Voucher {
   soldAt      DateTime?
   createdAt   DateTime      @default(now())
 
+  // Relationship to orders that dispense this voucher.
+  orderVouchers OrderVoucher[]
+
   @@index([productType, status])
   @@index([reference])
+  @@index([soldTo])
 }
 
 enum VoucherStatus {
@@ -35,21 +39,201 @@ enum VoucherStatus {
 
 /// One purchase attempt, keyed by the Paystack reference (idempotency anchor).
 model Order {
-  id           String      @id @default(cuid())
-  reference    String      @unique
-  email        String
-  phone        String?
-  productType  String      // product id (see src/lib/products.ts)
-  category     String      // "VOUCHER" | "FORM"
-  amount       Int         // amount in kobo/pesewas (minor units)
-  currency     String      @default("GHS")
-  status       OrderStatus @default(PENDING)
-  voucherCode  String?     // filled for fulfilled voucher orders
-  emailSent    Boolean     @default(false)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  id             String      @id @default(cuid())
+  reference      String      @unique
+  email          String
+  phone          String?
+  productType    String      // product id (see src/lib/products.ts)
+  category       String      // "VOUCHER" | "FORM"
+
+  // Total amount actually charged, in pesewas.
+  amount         Int
+
+  // Original amount before discounts, in pesewas.
+  originalAmount Int?
+
+  // Discount applied, in pesewas.
+  discountAmount Int           @default(0)
+
+  currency       String        @default("GHS")
+  status         OrderStatus   @default(PENDING)
+
+  // Number of vouchers purchased in this order.
+  quantity       Int           @default(1)
+
+  // Promo code used for this order, if any.
+  promoCode      String?
+
+  // Kept for backward compatibility with the existing system.
+  // For new multi-voucher orders, individual voucher codes are
+  // stored through OrderVoucher.
+  voucherCode    String?
+
+  emailSent      Boolean       @default(false)
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  // Vouchers dispensed for this order.
+  orderVouchers  OrderVoucher[]
+
+  // Promo code associated with this order, if one was used.
+  promo         PromoCode?     @relation(fields: [promoCode], references: [code])
 
   @@index([status])
+  @@index([email])
+  @@index([email, createdAt])
+  @@index([promoCode])
+}
+
+/// Connects an Order to one or more Voucher records.
+///
+/// This allows a single purchase to contain multiple vouchers
+/// without storing multiple voucher codes in one database field.
+model OrderVoucher {
+  id        String   @id @default(cuid())
+
+  orderId   String
+  voucherId String
+
+  createdAt DateTime @default(now())
+
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  voucher   Voucher @relation(fields: [voucherId], references: [id])
+
+  @@unique([orderId, voucherId])
+  @@index([orderId])
+  @@index([voucherId])
+}
+
+/// Promotional/discount codes.
+///
+/// A promo can either:
+/// 1. Be manually assigned to specific email addresses, or
+/// 2. Be used as a general/loyalty promo when allowed.
+model PromoCode {
+  id                    String   @id @default(cuid())
+
+  /// The actual code customers enter, e.g. TUIMARIN20.
+  code                  String   @unique
+
+  /// Discounted price per voucher in pesewas.
+  /// GHS 20 = 2000.
+  discountedPrice       Int      @default(2000)
+
+  /// Maximum number of discounted vouchers one customer
+  /// can purchase using this promo.
+  maxVouchersPerCustomer Int     @default(2)
+
+  /// Maximum number of times this promo can be redeemed overall.
+  /// Null means unlimited.
+  maxRedemptions        Int?
+
+  /// Number of successful redemptions so far.
+  redemptionCount       Int      @default(0)
+
+  /// Whether the promo can currently be used.
+  active                Boolean  @default(true)
+
+  /// If true, the customer must have completed at least
+  /// 5 qualifying purchases before using this promo.
+  requiresFivePurchases Boolean  @default(false)
+
+  /// Optional expiry date.
+  expiresAt             DateTime?
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Specific customers allowed to use this promo.
+  allowedEmails         PromoEmail[]
+
+  // Successful promo redemptions.
+  redemptions           PromoRedemption[]
+
+  // Orders that used this promo.
+  orders                Order[]
+
+  @@index([active])
+  @@index([expiresAt])
+}
+
+/// Allows a promo code to be restricted to specific email addresses.
+///
+/// Example:
+/// promo code: SHADRACK20
+/// allowed email: person@example.com
+///
+/// Only that email can use the code.
+model PromoEmail {
+  id          String   @id @default(cuid())
+
+  promoCodeId String
+  email       String
+
+  createdAt   DateTime @default(now())
+
+  promo       PromoCode @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
+
+  @@unique([promoCodeId, email])
+  @@index([email])
+}
+
+/// Records every successful use of a promo code.
+///
+/// This allows us to enforce:
+/// - maximum 2 discounted vouchers per customer
+/// - redemption history
+/// - auditing
+/// - prevention of client-side manipulation
+model PromoRedemption {
+  id             String   @id @default(cuid())
+
+  promoCodeId    String
+  email          String
+  orderReference String
+
+  /// Number of vouchers discounted by this redemption.
+  quantity       Int
+
+  /// Actual discount given in pesewas.
+  discountAmount Int
+
+  createdAt      DateTime @default(now())
+
+  promo          PromoCode @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
+
+  @@unique([promoCodeId, orderReference])
+  @@index([email])
+  @@index([promoCodeId])
+  @@index([email, promoCodeId])
+}
+
+/// Tracks stock-alert notifications so the system does not
+/// repeatedly send the same low-stock alert.
+model StockAlert {
+  id          String   @id @default(cuid())
+
+  /// Product type the alert belongs to.
+  productType String
+
+  /// Stock level at which this alert was triggered.
+  stockLevel  Int
+
+  /// Whether the alert has been sent by email.
+  emailSent   Boolean  @default(false)
+
+  /// Whether the alert has been sent by WhatsApp.
+  whatsappSent Boolean @default(false)
+
+  /// When the alert was created.
+  createdAt   DateTime @default(now())
+
+  /// When the alert was last processed.
+  updatedAt   DateTime @updatedAt
+
+  @@index([productType])
+  @@index([productType, createdAt])
 }
 
 enum OrderStatus {
@@ -59,3 +243,4 @@ enum OrderStatus {
   FAILED
   OUT_OF_STOCK
 }
+```
