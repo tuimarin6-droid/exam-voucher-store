@@ -1,4 +1,4 @@
-```ts
+```text
 import { prisma } from "@/lib/db";
 import { dispenseVouchers } from "./inventory";
 import { recordPromoRedemption } from "./promos";
@@ -35,10 +35,7 @@ export async function fulfilByReference(reference: string) {
     };
   }
 
-  // 1. Dispense vouchers from available inventory
-  //
-  // dispenseVouchers() expects ONE object containing:
-  // voucherType, email, reference and quantity.
+  // Dispense the required number of vouchers
   const vouchers = await dispenseVouchers({
     voucherType: order.productType,
     email: order.email,
@@ -46,7 +43,7 @@ export async function fulfilByReference(reference: string) {
     quantity: order.quantity,
   });
 
-  // 2. Record promo code redemption if a discount was applied
+  // Record promo code redemption if a discount was applied
   if (order.promoCode && order.discountAmount > 0) {
     try {
       await recordPromoRedemption({
@@ -64,14 +61,14 @@ export async function fulfilByReference(reference: string) {
     }
   }
 
-  // 3. Send email with the generated/dispensed vouchers
+  // Send email with the dispensed vouchers
   await sendVoucherEmail({
     to: order.email,
     vouchers,
     order,
   });
 
-  // 4. Mark the order as completed
+  // Mark the order as completed
   await prisma.order.update({
     where: { reference },
     data: {
