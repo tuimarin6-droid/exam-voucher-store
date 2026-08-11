@@ -4,23 +4,26 @@ import { useState } from "react";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Check } from "@/components/icons";
+import { Check, Lock, MessageCircle } from "@/components/icons";
 
 interface FoundVoucher {
-  serial: string;
-  pin: string;
-  voucherType: string;
+  code: string;
+  productType: string;
 }
 
 interface FoundOrder {
   reference: string;
   productType: string;
+  productName: string;
+  category: "VOUCHER" | "FORM" | null;
   createdAt: string;
   vouchers: FoundVoucher[];
+  whatsappUrl?: string;
 }
 
 export default function LookupPage() {
-  const [identifier, setIdentifier] = useState("");
+  const [reference, setReference] = useState("");
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [orders, setOrders] = useState<FoundOrder[] | null>(null);
@@ -31,8 +34,8 @@ export default function LookupPage() {
     setError(null);
     setOrders(null);
 
-    if (!identifier.trim()) {
-      return setError("Please enter your email address or order reference.");
+    if (!reference.trim() || !email.trim()) {
+      return setError("Please enter both your order reference and the email address used at checkout.");
     }
 
     setLoading(true);
@@ -41,7 +44,7 @@ export default function LookupPage() {
       const res = await fetch("/api/lookup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifier }),
+        body: JSON.stringify({ reference, email }),
       });
 
       const data = await res.json();
@@ -83,20 +86,32 @@ export default function LookupPage() {
           Retrieve Purchased Vouchers
         </h1>
         <p className="mt-2 text-sm text-ink-500">
-          Enter the email address used during purchase or your Paystack order reference to find your voucher keys.
+          Enter your order reference and the email address used at checkout to find your voucher codes.
         </p>
 
         <form onSubmit={handleSearch} className="mt-6 card p-6">
-          <label htmlFor="identifier" className="block text-sm font-600 text-ink-900">
-            Email address or Order Reference
+          <label htmlFor="reference" className="block text-sm font-600 text-ink-900">
+            Order Reference
+          </label>
+          <input
+            id="reference"
+            type="text"
+            value={reference}
+            onChange={(e) => setReference(e.target.value)}
+            placeholder="e.g. REF-123456"
+            className="mt-2 w-full rounded-xl border border-[#e6e5e3] px-4 py-3 text-sm outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-500/30"
+          />
+
+          <label htmlFor="email" className="mt-4 block text-sm font-600 text-ink-900">
+            Email address used at checkout
           </label>
           <div className="mt-2 flex gap-2">
             <input
-              id="identifier"
-              type="text"
-              value={identifier}
-              onChange={(e) => setIdentifier(e.target.value)}
-              placeholder="e.g. buyer@example.com or REF-123456"
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="buyer@example.com"
               className="w-full rounded-xl border border-[#e6e5e3] px-4 py-3 text-sm outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-500/30"
             />
             <button
@@ -107,6 +122,10 @@ export default function LookupPage() {
               {loading ? "Searching..." : "Search"}
             </button>
           </div>
+
+          <p className="mt-3 flex items-center gap-1.5 text-xs text-ink-500">
+            <Lock width={13} height={13} /> We ask for both fields so only you can view your codes.
+          </p>
 
           {error && (
             <p className="mt-4 rounded-lg bg-[#fce9e7] px-4 py-2.5 text-sm text-[#b23b30]">
@@ -133,14 +152,28 @@ export default function LookupPage() {
                     </p>
                   </div>
                   <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-600 text-green-800">
-                    {order.productType}
+                    {order.productName}
                   </span>
                 </div>
 
                 <div className="mt-4 space-y-3">
-                  {order.vouchers.length > 0 ? (
+                  {order.category === "FORM" ? (
+                    order.whatsappUrl ? (
+                      
+                        href={order.whatsappUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-accent w-full"
+                      >
+                        <MessageCircle width={18} height={18} /> Continue on WhatsApp
+                      </a>
+                    ) : (
+                      <p className="text-xs text-ink-500 italic">
+                        This order is being processed. Please check back shortly.
+                      </p>
+                    )
+                  ) : order.vouchers.length > 0 ? (
                     order.vouchers.map((v, i) => {
-                      const fullKey = `Serial: ${v.serial} | PIN: ${v.pin}`;
                       const keyId = `${order.reference}-${i}`;
                       return (
                         <div
@@ -148,12 +181,11 @@ export default function LookupPage() {
                           className="flex items-center justify-between rounded-xl border border-[#e6e5e3] bg-[#f7f9fc] p-3 text-sm"
                         >
                           <div className="font-mono">
-                            <span className="font-600 text-ink-900">Serial:</span> {v.serial}{" "}
-                            <span className="ml-3 font-600 text-ink-900">PIN:</span> {v.pin}
+                            <span className="font-600 text-ink-900">Code:</span> {v.code}
                           </div>
                           <button
                             type="button"
-                            onClick={() => copyToClipboard(fullKey, keyId)}
+                            onClick={() => copyToClipboard(v.code, keyId)}
                             className="flex items-center gap-1 rounded-lg border border-[#e6e5e3] bg-white px-3 py-1.5 text-xs font-600 text-ink-900 hover:bg-[#f0efed]"
                           >
                             {copiedKey === keyId ? (
@@ -169,7 +201,7 @@ export default function LookupPage() {
                     })
                   ) : (
                     <p className="text-xs text-ink-500 italic">
-                      No serial/PIN records associated with this order category (e.g. Form processing order).
+                      No voucher codes found for this order yet. Please check back shortly.
                     </p>
                   )}
                 </div>
