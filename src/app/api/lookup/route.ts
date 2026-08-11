@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { getProduct } from "@/lib/products";
+import { buildWhatsAppLink } from "@/lib/whatsapp";
 
 export const dynamic = "force-dynamic";
 
 const querySchema = z.object({
-  identifier: z.string().min(3),
+  reference: z.string().trim().min(3),
+  email: z.string().trim().email(),
 });
 
 export async function POST(req: Request) {
@@ -14,21 +17,21 @@ export async function POST(req: Request) {
     parsed = querySchema.parse(await req.json());
   } catch {
     return NextResponse.json(
-      { error: "Please enter a valid email address or order reference." },
+      { error: "Please enter the order reference and the email address used at checkout." },
       { status: 400 }
     );
   }
 
-  const query = parsed.identifier.trim();
+  const { reference, email } = parsed;
 
-  // Search orders matching either the reference or email
-  const orders = await prisma.order.findMany({
+  // Both the reference AND the email must match the SAME order -- proof of
+  // ownership, not just knowledge of one field. This prevents anyone who
+  // merely knows (or guesses) a customer's email from pulling up their
+  // order history and already-purchased voucher codes.
+  const order = await prisma.order.findFirst({
     where: {
-      OR: [
-        { reference: { equals: query, mode: "insensitive" } },
-        { email: { equals: query, mode: "insensitive" } },
-      ],
-      // Updated to valid OrderStatus enum values from your schema
+      reference: { equals: reference, mode: "insensitive" },
+      email: { equals: email, mode: "insensitive" },
       status: { in: ["PAID", "FULFILLED"] },
     },
     include: {
@@ -43,23 +46,35 @@ export async function POST(req: Request) {
         },
       },
     },
-    orderBy: { createdAt: "desc" },
-    take: 10,
   });
 
-  if (orders.length === 0) {
+  if (!order) {
     return NextResponse.json(
-      { error: "No completed orders found for that email or reference." },
+      { error: "No completed order found matching that reference and email." },
       { status: 404 }
     );
   }
 
-  const results = orders.map((order) => ({
+  const product = getProduct(order.productType);
+  const productName = product?.name ?? order.productType;
+
+  // FORM orders don't dispense a code -- give the buyer the same WhatsApp
+  // continuation link they'd get on the /success page, so a lost tab
+  // doesn't leave them stuck.
+  const whatsappUrl =
+    product?.category === "FORM"
+      ? buildWhatsAppLink({ reference: order.reference, productName, email: order.email })
+      : undefined;
+
+  const result = {
     reference: order.reference,
     productType: order.productType,
+    productName,
+    category: product?.category ?? null,
     createdAt: order.createdAt,
     vouchers: order.orderVouchers.map((ov) => ov.voucher),
-  }));
+    whatsappUrl,
+  };
 
-  return NextResponse.json({ orders: results });
+  return NextResponse.json({ orders: [result] });
 }
