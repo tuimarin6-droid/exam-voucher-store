@@ -1,4 +1,4 @@
-```tet
+```text
 import { prisma } from "@/lib/db";
 import { dispenseVouchers } from "./inventory";
 import { recordPromoRedemption } from "./promos";
@@ -17,7 +17,6 @@ export async function fulfilByReference(reference: string) {
   const product = getProduct(order.productType);
   const productName = product?.name ?? order.productType;
 
-  // Cast status to string to prevent Prisma Enum type comparison errors
   const statusStr = String(order.status);
 
   if (
@@ -35,7 +34,6 @@ export async function fulfilByReference(reference: string) {
     };
   }
 
-  // Dispense the required number of vouchers
   const vouchers = await dispenseVouchers({
     voucherType: order.productType,
     email: order.email,
@@ -43,7 +41,6 @@ export async function fulfilByReference(reference: string) {
     quantity: order.quantity,
   });
 
-  // Record promo code redemption if a discount was applied
   if (order.promoCode && order.discountAmount > 0) {
     try {
       await recordPromoRedemption({
@@ -61,14 +58,12 @@ export async function fulfilByReference(reference: string) {
     }
   }
 
-  // Send email with the dispensed vouchers
   await sendVoucherEmail({
     to: order.email,
     vouchers,
     order,
   });
 
-  // Mark the order as completed
   await prisma.order.update({
     where: { reference },
     data: {
