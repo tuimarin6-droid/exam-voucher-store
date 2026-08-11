@@ -6,6 +6,20 @@ import { Bolt, Check, Clock, Download, Lock, ShieldCheck } from "@/components/ic
 
 interface SeriesPoint { date: string; label: string; amount: number; amountLabel: string }
 
+interface Promo {
+  id: string;
+  code: string;
+  discountedPrice: number;
+  maxVouchersPerCustomer: number;
+  maxRedemptions: number | null;
+  redemptionCount: number;
+  active: boolean;
+  requiresFivePurchases: boolean;
+  expiresAt: string | null;
+  allowedEmails: string[];
+  createdAt: string;
+}
+
 interface Overview {
   kpis: {
     revenueLabel: string;
@@ -59,6 +73,16 @@ export default function AdminPage() {
   const [status, setStatus] = useState("all");
   const [bucket, setBucket] = useState<"day" | "week">("day");
 
+  const [promos, setPromos] = useState<Promo[] | null>(null);
+  const [promoError, setPromoError] = useState<string | null>(null);
+  const [promoBusy, setPromoBusy] = useState<string>("");
+  const [newCode, setNewCode] = useState("");
+  const [newPrice, setNewPrice] = useState("20");
+  const [newMaxPerCustomer, setNewMaxPerCustomer] = useState("2");
+  const [newMaxRedemptions, setNewMaxRedemptions] = useState("");
+  const [newExpiresAt, setNewExpiresAt] = useState("");
+  const [newRequiresFive, setNewRequiresFive] = useState(false);
+
   const filters = { from, to, product, status, bucket };
 
   useEffect(() => {
@@ -82,11 +106,78 @@ export default function AdminPage() {
       setData(json);
       setAuthed(true);
       sessionStorage.setItem("adminToken", t);
+      void loadPromos(t);
     } catch (e: any) {
       setError(e.message);
       setAuthed(false);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function loadPromos(t: string) {
+    setPromoError(null);
+    try {
+      const res = await fetch("/api/admin/promos", {
+        headers: { Authorization: `Bearer ${t}` },
+      });
+      if (!res.ok) throw new Error("Could not load promo codes.");
+      const json = (await res.json()) as { promos: Promo[] };
+      setPromos(json.promos);
+    } catch (e: any) {
+      setPromoError(e.message);
+    }
+  }
+
+  async function createPromo(e: React.FormEvent) {
+    e.preventDefault();
+    setPromoBusy("create");
+    setPromoError(null);
+    try {
+      const res = await fetch("/api/admin/promos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          code: newCode,
+          discountedPriceGHS: Number(newPrice),
+          maxVouchersPerCustomer: Number(newMaxPerCustomer),
+          maxRedemptions: newMaxRedemptions ? Number(newMaxRedemptions) : null,
+          expiresAt: newExpiresAt || null,
+          requiresFivePurchases: newRequiresFive,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Could not create promo code.");
+      setNewCode("");
+      setNewPrice("20");
+      setNewMaxPerCustomer("2");
+      setNewMaxRedemptions("");
+      setNewExpiresAt("");
+      setNewRequiresFive(false);
+      await loadPromos(token);
+    } catch (e: any) {
+      setPromoError(e.message);
+    } finally {
+      setPromoBusy("");
+    }
+  }
+
+  async function togglePromo(promo: Promo) {
+    setPromoBusy(promo.id);
+    setPromoError(null);
+    try {
+      const res = await fetch(`/api/admin/promos/${promo.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ active: !promo.active }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Could not update promo code.");
+      setPromos((prev) => prev?.map((p) => (p.id === promo.id ? { ...p, active: json.promo.active } : p)) ?? null);
+    } catch (e: any) {
+      setPromoError(e.message);
+    } finally {
+      setPromoBusy("");
     }
   }
 
@@ -296,6 +387,130 @@ export default function AdminPage() {
                   ))}
                   {data!.orders.length === 0 && (
                     <tr><td colSpan={6} className="px-4 py-8 text-center text-ink-500">No orders match these filters.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Promo codes */}
+            <h2 className="mt-10 font-display text-lg font-bold text-ink-900">Promo codes</h2>
+            <p className="mt-1 text-sm text-ink-500">Create and manage discount codes for voucher purchases.</p>
+
+            <form onSubmit={createPromo} className="mt-4 card p-5">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <Field label="Code">
+                  <input
+                    type="text"
+                    required
+                    value={newCode}
+                    onChange={(e) => setNewCode(e.target.value.toUpperCase())}
+                    placeholder="SAVE20"
+                    className="mt-1 w-full rounded-xl border border-[#e6e5e3] px-3 py-2 text-sm outline-none focus:border-brand-600"
+                  />
+                </Field>
+                <Field label="Discounted price (GHS)">
+                  <input
+                    type="number"
+                    required
+                    min={1}
+                    step="0.01"
+                    value={newPrice}
+                    onChange={(e) => setNewPrice(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-[#e6e5e3] px-3 py-2 text-sm outline-none focus:border-brand-600"
+                  />
+                </Field>
+                <Field label="Max vouchers / customer">
+                  <input
+                    type="number"
+                    required
+                    min={1}
+                    value={newMaxPerCustomer}
+                    onChange={(e) => setNewMaxPerCustomer(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-[#e6e5e3] px-3 py-2 text-sm outline-none focus:border-brand-600"
+                  />
+                </Field>
+                <Field label="Max total redemptions (optional)">
+                  <input
+                    type="number"
+                    min={1}
+                    value={newMaxRedemptions}
+                    onChange={(e) => setNewMaxRedemptions(e.target.value)}
+                    placeholder="Unlimited"
+                    className="mt-1 w-full rounded-xl border border-[#e6e5e3] px-3 py-2 text-sm outline-none focus:border-brand-600"
+                  />
+                </Field>
+                <Field label="Expires (optional)">
+                  <input
+                    type="date"
+                    value={newExpiresAt}
+                    onChange={(e) => setNewExpiresAt(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-[#e6e5e3] px-3 py-2 text-sm outline-none focus:border-brand-600"
+                  />
+                </Field>
+                <label className="mt-1 flex items-center gap-2 self-end pb-2 text-sm text-ink-700">
+                  <input
+                    type="checkbox"
+                    checked={newRequiresFive}
+                    onChange={(e) => setNewRequiresFive(e.target.checked)}
+                    className="h-4 w-4 rounded border-[#e6e5e3]"
+                  />
+                  Requires 5 prior purchases
+                </label>
+                <div className="flex items-end">
+                  <button type="submit" disabled={promoBusy === "create"} className="btn-primary w-full disabled:opacity-60">
+                    {promoBusy === "create" ? "Creating\u2026" : "Create promo code"}
+                  </button>
+                </div>
+              </div>
+            </form>
+
+            {promoError && <p className="mt-3 rounded-lg bg-[#fce9e7] px-3 py-2 text-sm text-[#b23b30]">{promoError}</p>}
+
+            <div className="mt-4 card overflow-x-auto">
+              <table className="w-full min-w-[760px] text-left text-sm">
+                <thead>
+                  <tr className="border-b border-[#e6e5e3] text-xs uppercase tracking-wide text-ink-500">
+                    <th className="px-4 py-3 font-semibold">Code</th>
+                    <th className="px-4 py-3 font-semibold">Price</th>
+                    <th className="px-4 py-3 font-semibold">Per customer</th>
+                    <th className="px-4 py-3 font-semibold">Redemptions</th>
+                    <th className="px-4 py-3 font-semibold">Expires</th>
+                    <th className="px-4 py-3 font-semibold">Status</th>
+                    <th className="px-4 py-3 font-semibold text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(promos ?? []).map((p) => (
+                    <tr key={p.id} className="border-b border-[#f0efed] last:border-0">
+                      <td className="px-4 py-3 font-mono text-xs font-semibold text-ink-900">{p.code}</td>
+                      <td className="whitespace-nowrap px-4 py-3 text-ink-700">
+                        {new Intl.NumberFormat("en-GH", { style: "currency", currency: "GHS" }).format(p.discountedPrice / 100)}
+                      </td>
+                      <td className="px-4 py-3 text-ink-700">{p.maxVouchersPerCustomer}</td>
+                      <td className="px-4 py-3 text-ink-700">
+                        {p.redemptionCount}{p.maxRedemptions !== null ? ` / ${p.maxRedemptions}` : ""}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 text-ink-500">
+                        {p.expiresAt ? new Date(p.expiresAt).toLocaleDateString() : "\u2014"}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={"rounded-full px-2.5 py-0.5 text-xs font-semibold " + (p.active ? "bg-accent-500/10 text-accent-700" : "bg-[#f0efed] text-ink-500")}>
+                          {p.active ? "Active" : "Inactive"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          onClick={() => togglePromo(p)}
+                          disabled={promoBusy === p.id}
+                          className="btn-ghost disabled:opacity-60"
+                        >
+                          {promoBusy === p.id ? "Saving\u2026" : p.active ? "Deactivate" : "Activate"}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {promos !== null && promos.length === 0 && (
+                    <tr><td colSpan={7} className="px-4 py-8 text-center text-ink-500">No promo codes yet.</td></tr>
                   )}
                 </tbody>
               </table>
