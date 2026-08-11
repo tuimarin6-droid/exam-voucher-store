@@ -28,14 +28,18 @@ export async function POST(req: Request) {
         { reference: { equals: query, mode: "insensitive" } },
         { email: { equals: query, mode: "insensitive" } },
       ],
-      status: { in: ["SUCCESS", "FULFILLED", "COMPLETED"] },
+      // Updated to valid OrderStatus enum values from your schema
+      status: { in: ["PAID", "FULFILLED"] },
     },
     include: {
-      vouchers: {
-        select: {
-          serial: true,
-          pin: true,
-          voucherType: true,
+      orderVouchers: {
+        include: {
+          voucher: {
+            select: {
+              code: true,
+              productType: true,
+            },
+          },
         },
       },
     },
@@ -54,7 +58,7 @@ export async function POST(req: Request) {
     reference: order.reference,
     productType: order.productType,
     createdAt: order.createdAt,
-    vouchers: order.vouchers,
+    vouchers: order.orderVouchers.map((ov) => ov.voucher),
   }));
 
   return NextResponse.json({ orders: results });
