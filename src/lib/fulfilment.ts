@@ -3,7 +3,7 @@ import { dispenseVouchers } from "./inventory";
 import { recordPromoRedemption } from "./promos";
 import { sendVoucherEmail } from "@/lib/email";
 
-export async function fulfilOrder(reference: string) {
+export async function fulfilByReference(reference: string) {
   const order = await prisma.order.findUnique({
     where: { reference },
   });
