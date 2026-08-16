@@ -20,6 +20,12 @@ export const ShieldCheck = (p: P) => (
     <path d="m9 12 2 2 4-4" />
   </svg>
 );
+export const Refresh = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+    <path d="M21 3v6h-6" />
+  </svg>
+);
 export const Bolt = (p: P) => (
   <svg {...base(p)}>
     <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
