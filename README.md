@@ -16,7 +16,7 @@ forms route buyers to a pre-filled WhatsApp message.
 | UI                 | Tailwind CSS, custom design system, inline SVG icons |
 | Database / ORM     | Prisma + SQLite (swap to Postgres/MySQL for prod)  |
 | Payments           | Paystack (initialize + verify + webhook)           |
-| Email              | SendGrid                                           |
+| Email              | Brevo                                              |
 | Fulfilment (forms) | WhatsApp deep link (wa.me)                          |
 
 > **On the design:** The UI applies the design intelligence from the
