@@ -1,416 +1,203 @@
 import { prisma } from "./db";
+import { getProduct, type Product } from "./products";
 
-export const DEFAULT_PROMO_PRICE = 2000; // GHS 20.00 in pesewas
-export const DEFAULT_PROMO_MAX_VOUCHERS = 2;
-export const REQUIRED_PURCHASES_FOR_LOYALTY = 5;
+// Unambiguous charset: no 0/O or 1/I, so codes are easy to read off a
+// screen/receipt and type back in without transcription errors.
+const CODE_CHARS = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
 
-export type PromoValidationResult = {
-  valid: boolean;
-  reason?: string;
-
-  promoCode?: string;
-
-  discountedUnitPrice?: number;
-
-  quantityAllowed?: number;
-
-  discountAmount?: number;
-
-  totalAmount?: number;
-};
-
-/**
- * Normalise customer emails before comparing them.
- *
- * This prevents:
- *
- * John@Email.com
- * JOHN@EMAIL.COM
- * john@email.com
- *
- * from being treated as different customers.
- */
-export function normalizeEmail(email: string): string {
-  return email.trim().toLowerCase();
+/** Generate a random, human-friendly promo code like "EDU-7F3K9Q". */
+export function generatePromoCode(prefix = "EDU", length = 6): string {
+  let body = "";
+  for (let i = 0; i < length; i++) {
+    body += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)];
+  }
+  return `${prefix}-${body}`;
 }
 
-/**
- * Normalise promo codes.
- *
- * Example:
- *
- * SAVE20
- * save20
- * Save20
- *
- * all become SAVE20.
- */
-export function normalizePromoCode(code: string): string {
-  return code.trim().toUpperCase();
+/** Generate a code guaranteed not to collide with an existing one. */
+export async function generateUniquePromoCode(prefix = "EDU", length = 6): Promise<string> {
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const candidate = generatePromoCode(prefix, length);
+    const exists = await prisma.promoCode.findUnique({ where: { code: candidate } });
+    if (!exists) return candidate;
+  }
+  throw new Error("Could not generate a unique promo code, try again");
 }
 
-/**
- * Count completed voucher purchases made by an email address.
- *
- * Only FULFILLED voucher orders count.
- *
- * Failed, pending and abandoned payments do not count.
- */
-export async function getCompletedVoucherPurchaseCount(
-  email: string
-): Promise<number> {
-  const normalizedEmail = normalizeEmail(email);
-
-  return prisma.order.count({
-    where: {
-      email: normalizedEmail,
-      category: "VOUCHER",
-      status: "FULFILLED",
-    },
-  });
+export function normalizeCode(raw: string): string {
+  return raw.trim().toUpperCase();
 }
 
-/**
- * Calculate how many discounted vouchers this customer has
- * already redeemed with this promo.
- */
-export async function getPromoQuantityUsed(
-  promoCodeId: string,
-  email: string
-): Promise<number> {
-  const normalizedEmail = normalizeEmail(email);
-
-  const result = await prisma.promoRedemption.aggregate({
-    where: {
-      promoCodeId,
-      email: normalizedEmail,
-    },
-    _sum: {
-      quantity: true,
-    },
-  });
-
-  return result._sum.quantity ?? 0;
+export interface PromoValidationOk {
+  ok: true;
+  promo: {
+    id: string;
+    code: string;
+    discountType: "PERCENT" | "FIXED";
+    discountValue: number;
+  };
+  discountAmount: number; // minor units, already capped to <= subtotal
 }
 
+export interface PromoValidationFail {
+  ok: false;
+  error: string;
+}
+
+export type PromoValidationResult = PromoValidationOk | PromoValidationFail;
+
 /**
- * Validate a promo code for a customer.
- *
- * This function is intentionally server-side.
+ * Read-only validation: does this code apply to this product/subtotal right
+ * now? Safe to call as often as you like (e.g. on every keystroke) since it
+ * never mutates usedCount. The only mutation happens in redeemPromoCode(),
+ * and only after payment actually succeeds.
  */
 export async function validatePromoCode(params: {
   code: string;
-  email: string;
-  quantity: number;
-  regularUnitPrice: number;
+  productId: string;
+  subtotal: number; // product amount in minor units, pre-discount
 }): Promise<PromoValidationResult> {
-  const code = normalizePromoCode(params.code);
-  const email = normalizeEmail(params.email);
-  const quantity = params.quantity;
+  const product = getProduct(params.productId);
+  if (!product) return { ok: false, error: "Unknown product." };
 
-  if (!code) {
-    return {
-      valid: false,
-      reason: "Please enter a promo code.",
-    };
+  const code = normalizeCode(params.code);
+  if (!code) return { ok: false, error: "Enter a promo code." };
+
+  const promo = await prisma.promoCode.findUnique({ where: { code } });
+  if (!promo) return { ok: false, error: "Promo code not found." };
+  if (!promo.active) return { ok: false, error: "This promo code is no longer active." };
+
+  const now = new Date();
+  if (promo.startsAt && now < promo.startsAt) {
+    return { ok: false, error: "This promo code is not active yet." };
+  }
+  if (promo.expiresAt && now >= promo.expiresAt) {
+    return { ok: false, error: "This promo code has expired." };
+  }
+  if (promo.maxUses !== null && promo.usedCount >= promo.maxUses) {
+    return { ok: false, error: "This promo code has reached its usage limit." };
   }
 
-  if (!email) {
-    return {
-      valid: false,
-      reason: "Please enter your email address first.",
-    };
+  if (!scopeMatches(promo.scope, promo.scopeProductId, product)) {
+    return { ok: false, error: "This promo code does not apply to this product." };
   }
 
-  if (!Number.isInteger(quantity) || quantity < 1) {
-    return {
-      valid: false,
-      reason: "Invalid voucher quantity.",
-    };
+  if (promo.minSubtotal !== null && promo.minSubtotal !== undefined && params.subtotal < promo.minSubtotal) {
+    return { ok: false, error: `This promo code requires a minimum order of ${(promo.minSubtotal / 100).toFixed(2)}.` };
   }
 
-  if (quantity > 9) {
-    return {
-      valid: false,
-      reason:
-        "Online purchases are limited to 9 vouchers.",
-    };
-  }
-
-  const promo = await prisma.promoCode.findUnique({
-    where: {
-      code,
-    },
-    include: {
-      allowedEmails: true,
-    },
-  });
-
-  if (!promo) {
-    return {
-      valid: false,
-      reason: "Invalid promo code.",
-    };
-  }
-
-  if (!promo.active) {
-    return {
-      valid: false,
-      reason: "This promo code is no longer active.",
-    };
-  }
-
-  /*
-   * Expiry check.
-   */
-  if (
-    promo.expiresAt &&
-    promo.expiresAt.getTime() < Date.now()
-  ) {
-    return {
-      valid: false,
-      reason: "This promo code has expired.",
-    };
-  }
-
-  /*
-   * Overall redemption limit.
-   */
-  if (
-    promo.maxRedemptions !== null &&
-    promo.redemptionCount >= promo.maxRedemptions
-  ) {
-    return {
-      valid: false,
-      reason:
-        "This promo code has reached its maximum number of uses.",
-    };
-  }
-
-  /*
-   * ------------------------------------------------------------
-   * SPECIFIC-EMAIL PROMO
-   * ------------------------------------------------------------
-   *
-   * If allowedEmails contains entries, the promo is restricted
-   * to those people.
-   */
-  if (promo.allowedEmails.length > 0) {
-    const emailIsAllowed = promo.allowedEmails.some(
-      (entry) =>
-        normalizeEmail(entry.email) === email
-    );
-
-    if (!emailIsAllowed) {
-      return {
-        valid: false,
-        reason:
-          "This promo code is not available for this email address.",
-      };
-    }
-  }
-
-  /*
-   * ------------------------------------------------------------
-   * FIVE-PURCHASE LOYALTY PROMO
-   * ------------------------------------------------------------
-   */
-  if (promo.requiresFivePurchases) {
-    const purchaseCount =
-      await getCompletedVoucherPurchaseCount(email);
-
-    if (
-      purchaseCount <
-      REQUIRED_PURCHASES_FOR_LOYALTY
-    ) {
-      return {
-        valid: false,
-        reason:
-          `This promo requires at least ${REQUIRED_PURCHASES_FOR_LOYALTY} completed voucher purchases.`,
-      };
-    }
-  }
-
-  /*
-   * ------------------------------------------------------------
-   * CUSTOMER-SPECIFIC USAGE LIMIT
-   * ------------------------------------------------------------
-   */
-  const alreadyUsed =
-    await getPromoQuantityUsed(
-      promo.id,
-      email
-    );
-
-  const remainingForCustomer =
-    Math.max(
-      0,
-      promo.maxVouchersPerCustomer -
-        alreadyUsed
-    );
-
-  if (remainingForCustomer <= 0) {
-    return {
-      valid: false,
-      reason:
-        "You have already used the maximum number of discounted vouchers allowed by this promo.",
-    };
-  }
-
-  /*
-   * A customer may request 9 vouchers, but if the promo
-   * only allows 2 discounted vouchers, only 2 can receive
-   * the discounted price.
-   */
-  const discountedQuantity = Math.min(
-    quantity,
-    remainingForCustomer
+  const discountAmount = computeDiscount(
+    { discountType: promo.discountType, discountValue: promo.discountValue },
+    params.subtotal,
   );
 
-  const discountedUnitPrice =
-    promo.discountedPrice > 0
-      ? promo.discountedPrice
-      : DEFAULT_PROMO_PRICE;
-
-  const regularTotal =
-    params.regularUnitPrice * quantity;
-
-  const discountedTotal =
-    discountedUnitPrice *
-      discountedQuantity +
-    params.regularUnitPrice *
-      (quantity - discountedQuantity);
-
-  const discountAmount =
-    regularTotal - discountedTotal;
-
   return {
-    valid: true,
-
-    promoCode: promo.code,
-
-    discountedUnitPrice,
-
-    quantityAllowed: discountedQuantity,
-
+    ok: true,
+    promo: {
+      id: promo.id,
+      code: promo.code,
+      discountType: promo.discountType as "PERCENT" | "FIXED",
+      discountValue: promo.discountValue,
+    },
     discountAmount,
-
-    totalAmount: discountedTotal,
   };
 }
 
+function scopeMatches(scope: string, scopeProductId: string | null, product: Product): boolean {
+  switch (scope) {
+    case "ALL":
+      return true;
+    case "VOUCHER":
+      return product.category === "VOUCHER";
+    case "FORM":
+      return product.category === "FORM";
+    case "PRODUCT":
+      return scopeProductId === product.id;
+    default:
+      return false;
+  }
+}
+
+/** Percent or fixed discount, always clamped to [0, subtotal]. */
+export function computeDiscount(
+  promo: { discountType: "PERCENT" | "FIXED"; discountValue: number },
+  subtotal: number,
+): number {
+  const raw =
+    promo.discountType === "PERCENT"
+      ? Math.round((subtotal * promo.discountValue) / 100)
+      : promo.discountValue;
+  return Math.max(0, Math.min(raw, subtotal));
+}
+
+export interface RedeemResult {
+  consumed: boolean; // true if usedCount was actually incremented just now
+  alreadyRedeemed: boolean; // true if this order had already redeemed (idempotent replay)
+  overused: boolean; // true if payment succeeded but the code had already hit maxUses (rare race) — still allow fulfilment, just flag for admin review
+}
+
 /**
- * Record a successful promo redemption.
+ * Atomically and idempotently record that `reference` consumed `promoCodeId`
+ * for `discountAmount`. Safe to call multiple times for the same order (the
+ * webhook, redirect-verify, and admin retry can all trigger fulfilment) —
+ * only the FIRST call actually increments PromoCode.usedCount.
  *
- * This should ONLY be called after Paystack payment has been
- * successfully verified.
+ * Called from fulfilByReference() only after Paystack has confirmed the
+ * payment succeeded, per the "single-use codes are only consumed after
+ * successful payment" requirement.
  */
-export async function recordPromoRedemption(params: {
-  promoCode: string;
-  email: string;
-  orderReference: string;
-  quantity: number;
+export async function redeemPromoCode(params: {
+  reference: string;
+  promoCodeId: string;
   discountAmount: number;
-}): Promise<void> {
-  const code = normalizePromoCode(
-    params.promoCode
-  );
+}): Promise<RedeemResult> {
+  const { reference, promoCodeId, discountAmount } = params;
 
-  const email = normalizeEmail(params.email);
+  // Idempotency guard: PromoRedemption.orderReference is unique. If a row
+  // already exists, this order already consumed its promo — nothing to do.
+  const existing = await prisma.promoRedemption.findUnique({ where: { orderReference: reference } });
+  if (existing) {
+    return { consumed: false, alreadyRedeemed: true, overused: false };
+  }
 
-  await prisma.$transaction(async (tx) => {
-    const promo = await tx.promoCode.findUnique({
-      where: {
-        code,
-      },
+  // Optimistic-locking increment (same pattern as dispenseVoucher in
+  // inventory.ts): read the current usedCount, then conditionally update
+  // WHERE usedCount is still that exact value. If another request beat us
+  // to it, the update affects 0 rows and we retry with a fresh read.
+  let consumed = false;
+  let overused = false;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const promo = await prisma.promoCode.findUnique({
+      where: { id: promoCodeId },
+      select: { usedCount: true, maxUses: true, active: true },
+    });
+    if (!promo) break; // code was deleted — nothing to increment, just record below
+
+    const underCap = promo.maxUses === null || promo.usedCount < promo.maxUses;
+    if (!underCap) {
+      // The customer already paid the discounted price (locked in at
+      // checkout), so a rare race that exhausts the cap between checkout and
+      // payment confirmation must never block their voucher delivery or
+      // claw back money — we just flag it for admin visibility.
+      overused = true;
+      break;
+    }
+
+    const claimed = await prisma.promoCode.updateMany({
+      where: { id: promoCodeId, usedCount: promo.usedCount },
+      data: { usedCount: promo.usedCount + 1 },
     });
 
-    if (!promo) {
-      throw new Error(
-        "Promo code no longer exists."
-      );
+    if (claimed.count === 1) {
+      consumed = true;
+      break;
     }
+    // Someone else incremented between our read and write — loop and retry.
+  }
 
-    /*
-     * Prevent the same order from being recorded twice.
-     */
-    const existing =
-      await tx.promoRedemption.findUnique({
-        where: {
-          promoCodeId_orderReference: {
-            promoCodeId: promo.id,
-            orderReference:
-              params.orderReference,
-          },
-        },
-      });
-
-    if (existing) {
-      return;
-    }
-
-    /*
-     * Re-check the customer's usage limit before
-     * recording the redemption.
-     */
-    const previous =
-      await tx.promoRedemption.aggregate({
-        where: {
-          promoCodeId: promo.id,
-          email,
-        },
-        _sum: {
-          quantity: true,
-        },
-      });
-
-    const alreadyUsed =
-      previous._sum.quantity ?? 0;
-
-    const remaining =
-      promo.maxVouchersPerCustomer -
-      alreadyUsed;
-
-    if (params.quantity > remaining) {
-      throw new Error(
-        "Promo voucher limit exceeded."
-      );
-    }
-
-    /*
-     * Re-check global redemption limit.
-     */
-    if (
-      promo.maxRedemptions !== null &&
-      promo.redemptionCount >=
-        promo.maxRedemptions
-    ) {
-      throw new Error(
-        "Promo redemption limit reached."
-      );
-    }
-
-    await tx.promoRedemption.create({
-      data: {
-        promoCodeId: promo.id,
-        email,
-        orderReference:
-          params.orderReference,
-        quantity: params.quantity,
-        discountAmount:
-          params.discountAmount,
-      },
-    });
-
-    await tx.promoCode.update({
-      where: {
-        id: promo.id,
-      },
-      data: {
-        redemptionCount: {
-          increment: 1,
-        },
-      },
-    });
+  await prisma.promoRedemption.create({
+    data: { promoCodeId, orderReference: reference, discountAmount },
   });
+
+  return { consumed, alreadyRedeemed: false, overused };
 }
