@@ -3,6 +3,7 @@ import { getProduct } from "./products";
 import { dispenseVoucher, OutOfStockError } from "./inventory";
 import { sendVoucherEmail } from "./email";
 import { verifyTransaction } from "./paystack";
+import { redeemPromoCode } from "./promo";
 
 export interface FulfilmentResult {
   ok: boolean;
@@ -17,12 +18,14 @@ export interface FulfilmentResult {
 
 /**
  * The single, shared fulfilment routine. Called by BOTH the webhook and the
- * browser-redirect verify endpoint, so it must be fully idempotent.
+ * browser-redirect verify endpoint (and the admin retry / reconcile sweep),
+ * so it must be fully idempotent.
  *
  * Steps:
  *   1. Re-verify the transaction against Paystack (server-side source of truth).
  *   2. Confirm the amount/currency matches the order we created.
- *   3. VOUCHER -> atomically dispense a code + email it.
+ *   3. If a promo code was used, consume it (idempotent — see redeemPromoCode).
+ *   4. VOUCHER -> atomically dispense a code + email it.
  *      FORM    -> just mark paid; the UI shows the WhatsApp button.
  */
 export async function fulfilByReference(reference: string): Promise<FulfilmentResult> {
@@ -59,12 +62,30 @@ export async function fulfilByReference(reference: string): Promise<FulfilmentRe
 
   await prisma.order.update({ where: { reference }, data: { status: "PAID" } });
 
+  // 3) Payment is confirmed successful -> now, and only now, consume the
+  // promo code (if one was used on this order). redeemPromoCode() is
+  // idempotent via the unique PromoRedemption.orderReference, so repeated
+  // calls to fulfilByReference for the same order never double-consume it.
+  if (order.promoCodeId) {
+    try {
+      await redeemPromoCode({
+        reference,
+        promoCodeId: order.promoCodeId,
+        discountAmount: order.discountAmount,
+      });
+    } catch (err) {
+      // Never let a promo bookkeeping failure block a paid customer from
+      // getting their voucher — log and continue.
+      console.error(`[fulfilment] promo redemption failed for ${reference}:`, err);
+    }
+  }
+
   const product = getProduct(order.productType);
   if (!product) {
     return { ok: false, category: null, status: "UNKNOWN_PRODUCT", reference };
   }
 
-  // 3a) University form -> manual WhatsApp fulfilment. Nothing to dispense.
+  // 4a) University form -> manual WhatsApp fulfilment. Nothing to dispense.
   if (product.category === "FORM") {
     await prisma.order.update({ where: { reference }, data: { status: "FULFILLED" } });
     return {
@@ -77,7 +98,7 @@ export async function fulfilByReference(reference: string): Promise<FulfilmentRe
     };
   }
 
-  // 3b) Voucher -> dispense atomically, then email.
+  // 4b) Voucher -> dispense atomically, then email.
   try {
     const code = await dispenseVoucher({
       voucherType: product.voucherType!,
