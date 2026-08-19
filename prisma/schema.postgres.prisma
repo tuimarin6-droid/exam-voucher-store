@@ -8,7 +8,7 @@
 //      DATABASE_URL="postgresql://user:pass@host:5432/edupass?schema=public"
 //   3) Run:  npx prisma migrate dev --name init
 //
-// Everything else in the app is identical \u2014 the atomic dispensing logic,
+// Everything else in the app is identical — the atomic dispensing logic,
 // idempotency, and webhook flow all work the same on Postgres.
 // ---------------------------------------------------------------------------
 
@@ -42,21 +42,31 @@ enum VoucherStatus {
 }
 
 model Order {
-  id           String      @id @default(cuid())
-  reference    String      @unique
-  email        String
-  phone        String?
-  productType  String
-  category     String
-  amount       Int
-  currency     String      @default("GHS")
-  status       OrderStatus @default(PENDING)
-  voucherCode  String?
-  emailSent    Boolean     @default(false)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  id             String      @id @default(cuid())
+  reference      String      @unique
+  email          String
+  phone          String?
+  productType    String
+  category       String
+  amount         Int         // FINAL amount charged via Paystack = originalAmount - discountAmount + processingFee
+  currency       String      @default("GHS")
+  status         OrderStatus @default(PENDING)
+  voucherCode    String?
+  emailSent      Boolean     @default(false)
+
+  originalAmount   Int?
+  discountAmount   Int         @default(0)
+  processingFee    Int         @default(0)
+  promoCode        String?
+  promoCodeId      String?
+
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  redemption     PromoRedemption?
 
   @@index([status])
+  @@index([promoCodeId])
 }
 
 enum OrderStatus {
@@ -65,4 +75,55 @@ enum OrderStatus {
   FULFILLED
   FAILED
   OUT_OF_STOCK
+}
+
+enum PromoDiscountType {
+  PERCENT
+  FIXED
+}
+
+enum PromoScope {
+  ALL
+  VOUCHER
+  FORM
+  PRODUCT
+}
+
+model PromoCode {
+  id             String            @id @default(cuid())
+  code           String            @unique
+  description    String?
+
+  discountType   PromoDiscountType
+  discountValue  Int
+
+  scope          PromoScope        @default(ALL)
+  scopeProductId String?
+
+  maxUses        Int?
+  usedCount      Int               @default(0)
+  minSubtotal    Int?
+
+  active         Boolean           @default(true)
+  startsAt       DateTime?
+  expiresAt      DateTime?
+
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  redemptions    PromoRedemption[]
+
+  @@index([active])
+}
+
+model PromoRedemption {
+  id             String    @id @default(cuid())
+  promoCodeId    String
+  promoCode      PromoCode @relation(fields: [promoCodeId], references: [id])
+  orderReference String    @unique
+  order          Order     @relation(fields: [orderReference], references: [reference])
+  discountAmount Int
+  createdAt      DateTime  @default(now())
+
+  @@index([promoCodeId])
 }
