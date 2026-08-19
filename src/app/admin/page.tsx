@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
-import { Bolt, Check, Clock, Download, Lock, Refresh, ShieldCheck } from "@/components/icons";
+import { Bolt, Check, Clock, Download, Lock, Refresh, ShieldCheck, Tag } from "@/components/icons";
 
 // Retrying only makes sense for orders that never finished fulfilling.
 // FULFILLED is already done; FAILED means Paystack itself rejected the
@@ -208,6 +209,14 @@ export default function AdminPage() {
                 <p className="mt-1 text-sm text-ink-500">Inventory, revenue and recent orders.</p>
               </div>
               <button onClick={logout} className="btn-ghost">Sign out</button>
+            </div>
+            <div className="mt-3">
+              <Link
+                href="/admin/promos"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-[#e6e5e3] px-3 py-1.5 text-xs font-semibold text-ink-700 transition-colors hover:bg-[#f0efed]"
+              >
+                <Tag className="h-3.5 w-3.5" /> Promo codes
+              </Link>
             </div>
 
             {/* KPIs */}
