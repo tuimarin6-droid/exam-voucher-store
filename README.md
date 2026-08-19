@@ -12,7 +12,7 @@ forms route buyers to a pre-filled WhatsApp message.
 
 | Concern            | Choice                                             |
 | ------------------ | -------------------------------------------------- |
-| Framework          | Next.js 14 (App Router) + TypeScript               |
+| Framework          | Next.js 14 (App router) + TypeScript               |
 | UI                 | Tailwind CSS, custom design system, inline SVG icons |
 | Database / ORM     | Prisma + SQLite (swap to Postgres/MySQL for prod)  |
 | Payments           | Paystack (initialize + verify + webhook)           |
