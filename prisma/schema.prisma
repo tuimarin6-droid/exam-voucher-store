@@ -1,154 +1,133 @@
-import { NextResponse } from "next/server";
-import { z } from "zod";
-import { prisma } from "@/lib/db";
-import { getProduct } from "@/lib/products";
-import { initializeTransaction, newReference } from "@/lib/paystack";
-import { countAvailable } from "@/lib/inventory";
-import { validatePromoCode } from "@/lib/promos";
+// Prisma schema for the exam voucher store.
+// Default: SQLite (zero-config). For production, switch provider to
+// "postgresql" or "mysql" and update DATABASE_URL.
 
-export const dynamic = "force-dynamic";
+generator client {
+  provider = "prisma-client-js"
+}
 
-const bodySchema = z.object({
-  productId: z.string(),
-  email: z.string().email(),
-  phone: z.string().min(6).optional(),
-  quantity: z.coerce.number().int().min(1).max(9).default(1),
-  promoCode: z.string().optional(),
-});
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
 
-export async function POST(req: Request) {
-  try {
-    let parsed;
-    try {
-      parsed = bodySchema.parse(await req.json());
-    } catch {
-      return NextResponse.json(
-        { error: "Invalid request body" },
-        { status: 400 }
-      );
-    }
+/// A single sellable voucher code that you upload in bulk.
+model Voucher {
+  id          String        @id @default(cuid())
+  productType String        // "WASSCE" | "WASSCE_PRIVATE" | "BECE"
+  code        String        @unique
+  status      VoucherStatus @default(AVAILABLE)
+  soldTo      String?       // buyer email once dispensed
+  reference   String?       // Paystack reference that claimed this code
+  soldAt      DateTime?
+  createdAt   DateTime      @default(now())
 
-    const product = getProduct(parsed.productId);
-    if (!product) {
-      return NextResponse.json(
-        { error: "Unknown product" },
-        { status: 404 }
-      );
-    }
+  @@index([productType, status])
+  @@index([reference])
+}
 
-    if (product.category === "FORM" && parsed.quantity !== 1) {
-      return NextResponse.json(
-        { error: "University admission forms can only be purchased one at a time." },
-        { status: 400 }
-      );
-    }
+enum VoucherStatus {
+  AVAILABLE
+  RESERVED
+  SOLD
+}
 
-    if (product.category === "VOUCHER") {
-      const available = await countAvailable(product.voucherType!);
-      if (available < parsed.quantity) {
-        return NextResponse.json(
-          {
-            error:
-              available === 0
-                ? "This voucher is currently out of stock."
-                : `Only ${available} voucher${
-                    available === 1 ? "" : "s"
-                  } available.`,
-          },
-          { status: 409 }
-        );
-      }
-    }
+/// One purchase attempt, keyed by the Paystack reference (idempotency anchor).
+model Order {
+  id             String      @id @default(cuid())
+  reference      String      @unique
+  email          String
+  phone          String?
+  productType    String      // product id (see src/lib/products.ts)
+  category       String      // "VOUCHER" | "FORM"
+  amount         Int         // FINAL amount charged via Paystack (minor units) = originalAmount - discountAmount + processingFee
+  currency       String      @default("GHS")
+  status         OrderStatus @default(PENDING)
+  voucherCode    String?     // filled for fulfilled voucher orders
+  emailSent      Boolean     @default(false)
 
-    const originalAmount = product.amount * parsed.quantity;
-    let amount = originalAmount;
-    let discountAmount = 0;
-    let validatedPromoCode: string | null = null;
+  // --- Promo / pricing breakdown (all minor units) ---
+  originalAmount   Int?        // catalog price before discount/fee, for the receipt/admin view
+  discountAmount   Int         @default(0)
+  processingFee    Int         @default(0)
+  promoCode        String?     // the code as entered (uppercased), null if none applied
+  promoCodeId      String?     // PromoCode.id this order used, for joins/reporting
 
-    if (parsed.promoCode && parsed.promoCode.trim()) {
-      if (product.category !== "VOUCHER") {
-        return NextResponse.json(
-          { error: "Promo codes only apply to voucher products." },
-          { status: 400 }
-        );
-      }
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 
-      const promoResult = await validatePromoCode({
-        code: parsed.promoCode.trim(),
-        email: parsed.email,
-        quantity: parsed.quantity,
-        regularUnitPrice: product.amount,
-      });
+  redemption     PromoRedemption?
 
-      if (!promoResult.valid) {
-        return NextResponse.json(
-          { error: promoResult.reason || "Invalid promo code" },
-          { status: 400 }
-        );
-      }
+  @@index([status])
+  @@index([promoCodeId])
+}
 
-      amount = promoResult.totalAmount!;
-      discountAmount = promoResult.discountAmount!;
-      validatedPromoCode = promoResult.promoCode || null;
-    }
+enum OrderStatus {
+  PENDING
+  PAID
+  FULFILLED
+  FAILED
+  OUT_OF_STOCK
+}
 
-    const reference = newReference();
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-    const callbackUrl = `${siteUrl}/success?reference=${encodeURIComponent(reference)}`;
+enum PromoDiscountType {
+  PERCENT // discountValue is 1-100
+  FIXED   // discountValue is minor units (pesewas) off
+}
 
-    // Create pending order with null-safe promo relation
-    await prisma.order.create({
-      data: {
-        reference,
-        email: parsed.email,
-        phone: parsed.phone || null,
-        productType: product.id,
-        category: product.category,
-        amount,
-        originalAmount,
-        discountAmount,
-        currency: product.currency,
-        status: "PENDING",
-        quantity: parsed.quantity,
-        promoCode: validatedPromoCode,
-      },
-    });
+/// What a promo code is allowed to discount.
+enum PromoScope {
+  ALL     // any product
+  VOUCHER // any VOUCHER-category product (WASSCE/BECE etc.)
+  FORM    // any FORM-category product
+  PRODUCT // exactly one product, see scopeProductId
+}
 
-    try {
-      const init = await initializeTransaction({
-        email: parsed.email,
-        amount,
-        currency: product.currency,
-        reference,
-        callbackUrl,
-        metadata: {
-          productId: product.id,
-          category: product.category,
-          quantity: parsed.quantity,
-          promoCode: validatedPromoCode ?? undefined,
-        },
-      });
+/// A discount code that can be applied at checkout. Single-use codes are
+/// modeled as maxUses = 1; shared/bulk codes use a higher maxUses or null
+/// (unlimited). usedCount is only ever incremented AFTER a successful
+/// payment (see PromoRedemption + src/lib/fulfilment.ts), never at checkout
+/// entry, so an abandoned checkout never burns a use.
+model PromoCode {
+  id             String            @id @default(cuid())
+  code           String            @unique // always stored/matched uppercase
+  description    String?
 
-      return NextResponse.json({
-        authorizationUrl: init.authorization_url,
-        reference,
-      });
-    } catch (err) {
-      console.error("[initialize] paystack error:", err);
-      await prisma.order.update({
-        where: { reference },
-        data: { status: "FAILED" },
-      });
-      return NextResponse.json(
-        { error: "Could not start payment. Try again." },
-        { status: 502 }
-      );
-    }
-  } catch (error: any) {
-    console.error("[initialize] route crash:", error);
-    return NextResponse.json(
-      { error: error?.message || "Internal server error" },
-      { status: 500 }
-    );
-  }
+  discountType   PromoDiscountType
+  discountValue  Int               // percent (1-100) for PERCENT, minor units for FIXED
+
+  scope          PromoScope        @default(ALL)
+  scopeProductId String?           // required when scope = PRODUCT (see src/lib/products.ts ids)
+
+  maxUses        Int?              // null = unlimited total redemptions
+  usedCount      Int               @default(0)
+  minSubtotal    Int?              // optional minimum order amount (minor units) to qualify
+
+  active         Boolean           @default(true)
+  startsAt       DateTime?         // optional — code not valid before this
+  expiresAt      DateTime?         // optional — code not valid on/after this
+
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  redemptions    PromoRedemption[]
+
+  @@index([active])
+}
+
+/// One promo code applied to one order. Unique on orderReference so the
+/// consuming logic in fulfilByReference() can never double-count a redemption
+/// even if the webhook, redirect-verify, and admin retry all fire for the
+/// same order.
+model PromoRedemption {
+  id             String    @id @default(cuid())
+  promoCodeId    String
+  promoCode      PromoCode @relation(fields: [promoCodeId], references: [id])
+  orderReference String    @unique
+  order          Order     @relation(fields: [orderReference], references: [reference])
+  discountAmount Int       // minor units actually discounted on this order
+  createdAt      DateTime  @default(now())
+
+  @@index([promoCodeId])
 }
