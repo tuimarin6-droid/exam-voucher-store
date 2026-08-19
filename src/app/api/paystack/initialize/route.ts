@@ -2,12 +2,9 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getProduct } from "@/lib/products";
-import {
-  initializeTransaction,
-  newReference,
-  withPaystackFee,
-} from "@/lib/paystack";
+import { initializeTransaction, newReference } from "@/lib/paystack";
 import { countAvailable } from "@/lib/inventory";
+import { computeQuote } from "@/lib/pricing";
 
 export const dynamic = "force-dynamic";
 
@@ -15,22 +12,24 @@ const bodySchema = z.object({
   productId: z.string(),
   email: z.string().email(),
   phone: z.string().min(6).optional(),
+  promoCode: z.string().max(64).optional(),
 });
 
 /**
  * POST /api/paystack/initialize
  * Creates an Order (PENDING) and returns the Paystack hosted-checkout URL.
- * The amount is taken from our server-side catalog, NEVER from the client.
+ *
+ * The amount charged is ALWAYS recomputed here via computeQuote() -- the
+ * server-side catalog price, promo discount, and processing fee -- never
+ * trusted from the client. Any total the checkout UI showed the customer is
+ * just a preview; this is the number that actually gets charged.
  */
 export async function POST(req: Request) {
   let parsed;
   try {
     parsed = bodySchema.parse(await req.json());
   } catch {
-    return NextResponse.json(
-      { error: "Invalid request body" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
   const product = getProduct(parsed.productId);
@@ -43,11 +42,21 @@ export async function POST(req: Request) {
   if (product.category === "VOUCHER") {
     const available = await countAvailable(product.voucherType!);
     if (available <= 0) {
-      return NextResponse.json(
-        { error: "This voucher is currently out of stock." },
-        { status: 409 },
-      );
+      return NextResponse.json({ error: "This voucher is currently out of stock." }, { status: 409 });
     }
+  }
+
+  // Authoritative price: original catalog amount, promo discount (if the
+  // code is currently valid), and dynamic processing fee -- computed
+  // server-side, right now, from the database. If the promo code the
+  // customer typed no longer validates (expired/exhausted since they typed
+  // it), we tell them rather than silently charging full price.
+  const quote = await computeQuote({ productId: product.id, promoCode: parsed.promoCode });
+  if (!quote.ok) {
+    return NextResponse.json({ error: quote.error || "Could not price this order." }, { status: 400 });
+  }
+  if (parsed.promoCode?.trim() && !quote.promoApplied) {
+    return NextResponse.json({ error: quote.promoError || "Promo code is not valid." }, { status: 400 });
   }
 
   const reference = newReference();
@@ -61,36 +70,34 @@ export async function POST(req: Request) {
       phone: parsed.phone,
       productType: product.id,
       category: product.category,
-      amount: product.amount,
+      amount: quote.total,
       currency: product.currency,
       status: "PENDING",
+      originalAmount: quote.originalAmount,
+      discountAmount: quote.discountAmount,
+      processingFee: quote.processingFee,
+      promoCode: quote.promoApplied?.code ?? null,
+      promoCodeId: quote.promoApplied?.id ?? null,
     },
   });
 
   try {
-    // Charge the customer the fee-inclusive total so YOUR payout equals the
-    // sticker price. The recorded order.amount stays at the sticker price.
     const init = await initializeTransaction({
       email: parsed.email,
-      amount: withPaystackFee(product.amount),
+      amount: quote.total,
       currency: product.currency,
       reference,
       callbackUrl,
-      metadata: { productId: product.id, category: product.category },
+      metadata: {
+        productId: product.id,
+        category: product.category,
+        promoCode: quote.promoApplied?.code ?? null,
+      },
     });
-    return NextResponse.json({
-      authorizationUrl: init.authorization_url,
-      reference,
-    });
+    return NextResponse.json({ authorizationUrl: init.authorization_url, reference });
   } catch (err) {
     console.error("[initialize] paystack error:", err);
-    await prisma.order.update({
-      where: { reference },
-      data: { status: "FAILED" },
-    });
-    return NextResponse.json(
-      { error: "Could not start payment. Try again." },
-      { status: 502 },
-    );
+    await prisma.order.update({ where: { reference }, data: { status: "FAILED" } });
+    return NextResponse.json({ error: "Could not start payment. Try again." }, { status: 502 });
   }
 }
