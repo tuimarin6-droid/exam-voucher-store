@@ -20,12 +20,6 @@ export const ShieldCheck = (p: P) => (
     <path d="m9 12 2 2 4-4" />
   </svg>
 );
-export const Refresh = (p: P) => (
-  <svg {...base(p)}>
-    <path d="M21 12a9 9 0 1 1-2.64-6.36" />
-    <path d="M21 3v6h-6" />
-  </svg>
-);
 export const Bolt = (p: P) => (
   <svg {...base(p)}>
     <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
@@ -40,6 +34,12 @@ export const Mail = (p: P) => (
 export const MessageCircle = (p: P) => (
   <svg {...base(p)}>
     <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z" />
+  </svg>
+);
+export const Refresh = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+    <path d="M21 3v6h-6" />
   </svg>
 );
 export const Lock = (p: P) => (
@@ -82,5 +82,38 @@ export const Download = (p: P) => (
     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
     <path d="M7 10l5 5 5-5" />
     <path d="M12 15V3" />
+  </svg>
+);
+export const Tag = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M12 2H2v10l9.29 9.29a1 1 0 0 0 1.42 0l8.58-8.58a1 1 0 0 0 0-1.42L12 2z" />
+    <circle cx="7" cy="7" r="1.5" fill="currentColor" stroke="none" />
+  </svg>
+);
+export const X = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M18 6 6 18" />
+    <path d="m6 6 12 12" />
+  </svg>
+);
+export const Plus = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M12 5v14" />
+    <path d="M5 12h14" />
+  </svg>
+);
+export const Trash = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M3 6h18" />
+    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+    <path d="M10 11v6" />
+    <path d="M14 11v6" />
+  </svg>
+);
+export const Copy = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="9" y="9" width="13" height="13" rx="2" />
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
   </svg>
 );
