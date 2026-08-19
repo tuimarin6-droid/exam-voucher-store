@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { generateUniquePromoCode, normalizeCode } from "@/lib/promo";
 
 export const dynamic = "force-dynamic";
 
@@ -12,13 +11,9 @@ function authorized(req: Request): boolean {
   return header === `Bearer ${token}`;
 }
 
-const createSchema = z.object({
-  code: z.string().min(3).max(32).optional(), // omit to auto-generate
-  description: z.string().max(200).optional(),
-  discountType: z.enum(["PERCENT", "FIXED"]),
-  discountValue: z.number().int().positive(),
-  scope: z.enum(["ALL", "VOUCHER", "FORM", "PRODUCT"]).default("ALL"),
-  scopeProductId: z.string().optional(),
+const updateSchema = z.object({
+  active: z.boolean().optional(),
+  description: z.string().max(200).nullable().optional(),
   maxUses: z.number().int().positive().nullable().optional(),
   minSubtotal: z.number().int().nonnegative().nullable().optional(),
   startsAt: z.string().datetime().nullable().optional(),
@@ -26,85 +21,40 @@ const createSchema = z.object({
 });
 
 /**
- * GET /api/admin/promos   (admin only)
- * List every promo code with usage stats, most recently created first.
+ * PATCH /api/admin/promos/:id   (admin only)
+ * Partial update — used for the dashboard's Activate/Deactivate toggle and
+ * for editing usage limits / dates. The code, discount type/value, and scope
+ * are immutable after creation (create a new code instead) so historical
+ * orders always reflect the terms that were actually applied.
  */
-export async function GET(req: Request) {
-  if (!authorized(req)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const promos = await prisma.promoCode.findMany({
-    orderBy: { createdAt: "desc" },
-    include: { _count: { select: { redemptions: true } } },
-  });
-
-  return NextResponse.json({
-    promos: promos.map((p) => ({
-      id: p.id,
-      code: p.code,
-      description: p.description,
-      discountType: p.discountType,
-      discountValue: p.discountValue,
-      scope: p.scope,
-      scopeProductId: p.scopeProductId,
-      maxUses: p.maxUses,
-      usedCount: p.usedCount,
-      minSubtotal: p.minSubtotal,
-      active: p.active,
-      startsAt: p.startsAt?.toISOString() ?? null,
-      expiresAt: p.expiresAt?.toISOString() ?? null,
-      createdAt: p.createdAt.toISOString(),
-      redemptionCount: p._count.redemptions,
-    })),
-  });
-}
-
-/**
- * POST /api/admin/promos   (admin only)
- * Create a new promo code. If `code` is omitted, a unique readable code
- * (e.g. "EDU-7F3K9Q") is generated server-side.
- */
-export async function POST(req: Request) {
+export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   if (!authorized(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   let parsed;
   try {
-    parsed = createSchema.parse(await req.json());
+    parsed = updateSchema.parse(await req.json());
   } catch (err: any) {
     return NextResponse.json({ error: err?.errors?.[0]?.message || "Invalid request body" }, { status: 400 });
   }
 
-  if (parsed.discountType === "PERCENT" && parsed.discountValue > 100) {
-    return NextResponse.json({ error: "Percent discount cannot exceed 100." }, { status: 400 });
-  }
-  if (parsed.scope === "PRODUCT" && !parsed.scopeProductId) {
-    return NextResponse.json({ error: "scopeProductId is required when scope is PRODUCT." }, { status: 400 });
+  const existing = await prisma.promoCode.findUnique({ where: { id: params.id } });
+  if (!existing) {
+    return NextResponse.json({ error: "Promo code not found" }, { status: 404 });
   }
 
-  const code = parsed.code ? normalizeCode(parsed.code) : await generateUniquePromoCode();
-
-  const existing = await prisma.promoCode.findUnique({ where: { code } });
-  if (existing) {
-    return NextResponse.json({ error: `Code "${code}" already exists.` }, { status: 409 });
-  }
-
-  const promo = await prisma.promoCode.create({
+  const promo = await prisma.promoCode.update({
+    where: { id: params.id },
     data: {
-      code,
-      description: parsed.description,
-      discountType: parsed.discountType,
-      discountValue: parsed.discountValue,
-      scope: parsed.scope,
-      scopeProductId: parsed.scope === "PRODUCT" ? parsed.scopeProductId : null,
-      maxUses: parsed.maxUses ?? null,
-      minSubtotal: parsed.minSubtotal ?? null,
-      startsAt: parsed.startsAt ? new Date(parsed.startsAt) : null,
-      expiresAt: parsed.expiresAt ? new Date(parsed.expiresAt) : null,
+      ...(parsed.active !== undefined ? { active: parsed.active } : {}),
+      ...(parsed.description !== undefined ? { description: parsed.description } : {}),
+      ...(parsed.maxUses !== undefined ? { maxUses: parsed.maxUses } : {}),
+      ...(parsed.minSubtotal !== undefined ? { minSubtotal: parsed.minSubtotal } : {}),
+      ...(parsed.startsAt !== undefined ? { startsAt: parsed.startsAt ? new Date(parsed.startsAt) : null } : {}),
+      ...(parsed.expiresAt !== undefined ? { expiresAt: parsed.expiresAt ? new Date(parsed.expiresAt) : null } : {}),
     },
   });
 
-  return NextResponse.json({ promo }, { status: 201 });
+  return NextResponse.json({ promo });
 }
