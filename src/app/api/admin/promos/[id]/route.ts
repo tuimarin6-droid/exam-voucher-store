@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { generateUniquePromoCode, normalizeCode } from "@/lib/promo";
+import { normalizeCode } from "@/lib/promo";
 
 export const dynamic = "force-dynamic";
 
@@ -12,90 +12,95 @@ function authorized(req: Request): boolean {
   return header === `Bearer ${token}`;
 }
 
-const createSchema = z.object({
-  code: z.string().min(3).max(32).optional(), // omit to auto-generate
-  description: z.string().max(200).optional(),
-  discountType: z.enum(["PERCENT", "FIXED"]),
-  discountValue: z.number().int().positive(),
-  scope: z.enum(["ALL", "VOUCHER", "FORM", "PRODUCT"]).default("ALL"),
-  scopeProductId: z.string().optional(),
+const updateSchema = z.object({
+  code: z.string().min(3).max(32).optional(),
+  description: z.string().max(200).nullable().optional(),
+  discountType: z.enum(["PERCENT", "FIXED"]).optional(),
+  discountValue: z.number().int().positive().optional(),
+  scope: z.enum(["ALL", "VOUCHER", "FORM", "PRODUCT"]).optional(),
+  scopeProductId: z.string().nullable().optional(),
   maxUses: z.number().int().positive().nullable().optional(),
   minSubtotal: z.number().int().nonnegative().nullable().optional(),
+  active: z.boolean().optional(),
   startsAt: z.string().datetime().nullable().optional(),
   expiresAt: z.string().datetime().nullable().optional(),
 });
 
+type RouteParams = { params: { id: string } };
+
 /**
- * GET /api/admin/promos   (admin only)
- * List every promo code with usage stats, most recently created first.
+ * GET /api/admin/promos/[id]   (admin only)
+ * Fetch a single promo code with its redemption count.
  */
-export async function GET(req: Request) {
+export async function GET(req: Request, { params }: RouteParams) {
   try {
     if (!authorized(req)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const promos = await prisma.promoCode.findMany({
-      orderBy: { createdAt: "desc" },
+    const promo = await prisma.promoCode.findUnique({
+      where: { id: params.id },
       include: { _count: { select: { redemptions: true } } },
     });
 
+    if (!promo) {
+      return NextResponse.json({ error: "Promo code not found." }, { status: 404 });
+    }
+
     return NextResponse.json({
-      promos: promos.map((p) => ({
-        id: p.id,
-        code: p.code,
-        description: p.description,
-        discountType: p.discountType,
-        discountValue: p.discountValue,
-        scope: p.scope,
-        scopeProductId: p.scopeProductId,
-        maxUses: p.maxUses,
-        usedCount: p.usedCount,
-        minSubtotal: p.minSubtotal,
-        active: p.active,
-        startsAt: p.startsAt?.toISOString() ?? null,
-        expiresAt: p.expiresAt?.toISOString() ?? null,
-        createdAt: p.createdAt.toISOString(),
-        redemptionCount: p._count.redemptions,
-      })),
+      promo: {
+        id: promo.id,
+        code: promo.code,
+        description: promo.description,
+        discountType: promo.discountType,
+        discountValue: promo.discountValue,
+        scope: promo.scope,
+        scopeProductId: promo.scopeProductId,
+        maxUses: promo.maxUses,
+        usedCount: promo.usedCount,
+        minSubtotal: promo.minSubtotal,
+        active: promo.active,
+        startsAt: promo.startsAt?.toISOString() ?? null,
+        expiresAt: promo.expiresAt?.toISOString() ?? null,
+        createdAt: promo.createdAt.toISOString(),
+        redemptionCount: promo._count.redemptions,
+      },
     });
   } catch (err) {
-    // Never let an unhandled error produce an empty/non-JSON response.
-    console.error("GET /api/admin/promos failed:", err);
+    console.error(`GET /api/admin/promos/${params?.id} failed:`, err);
     return NextResponse.json(
-      {
-        error: "Failed to load promo codes.",
-        detail: err instanceof Error ? err.message : String(err),
-      },
+      { error: "Failed to load promo code.", detail: err instanceof Error ? err.message : String(err) },
       { status: 500 }
     );
   }
 }
 
 /**
- * POST /api/admin/promos   (admin only)
- * Create a new promo code. If `code` is omitted, a unique readable code
- * (e.g. "EDU-7F3K9Q") is generated server-side.
+ * PATCH /api/admin/promos/[id]   (admin only)
+ * Partially update a promo code — used by the dashboard's Activate/Deactivate
+ * button (sends { active: false }) as well as any future edit form.
  */
-export async function POST(req: Request) {
+export async function PATCH(req: Request, { params }: RouteParams) {
   try {
     if (!authorized(req)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const existing = await prisma.promoCode.findUnique({ where: { id: params.id } });
+    if (!existing) {
+      return NextResponse.json({ error: "Promo code not found." }, { status: 404 });
     }
 
     let body: unknown;
     try {
       body = await req.json();
     } catch {
-      return NextResponse.json(
-        { error: "Request body must be valid JSON." },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Request body must be valid JSON." }, { status: 400 });
     }
 
     let parsed;
     try {
-      parsed = createSchema.parse(body);
+      parsed = updateSchema.parse(body);
     } catch (err: any) {
       return NextResponse.json(
         { error: err?.errors?.[0]?.message || "Invalid request body" },
@@ -103,58 +108,93 @@ export async function POST(req: Request) {
       );
     }
 
-    if (parsed.discountType === "PERCENT" && parsed.discountValue > 100) {
-      return NextResponse.json(
-        { error: "Percent discount cannot exceed 100." },
-        { status: 400 }
-      );
+    const nextDiscountType = parsed.discountType ?? existing.discountType;
+    const nextDiscountValue = parsed.discountValue ?? existing.discountValue;
+    if (nextDiscountType === "PERCENT" && nextDiscountValue > 100) {
+      return NextResponse.json({ error: "Percent discount cannot exceed 100." }, { status: 400 });
     }
-    if (parsed.scope === "PRODUCT" && !parsed.scopeProductId) {
+
+    const nextScope = parsed.scope ?? existing.scope;
+    const nextScopeProductId =
+      parsed.scopeProductId !== undefined ? parsed.scopeProductId : existing.scopeProductId;
+    if (nextScope === "PRODUCT" && !nextScopeProductId) {
       return NextResponse.json(
         { error: "scopeProductId is required when scope is PRODUCT." },
         { status: 400 }
       );
     }
 
-    const code = parsed.code
-      ? normalizeCode(parsed.code)
-      : await generateUniquePromoCode();
+    let code = existing.code;
+    if (parsed.code) {
+      code = normalizeCode(parsed.code);
+      if (code !== existing.code) {
+        const clash = await prisma.promoCode.findUnique({ where: { code } });
+        if (clash) {
+          return NextResponse.json({ error: `Code "${code}" already exists.` }, { status: 409 });
+        }
+      }
+    }
 
-    const existing = await prisma.promoCode.findUnique({ where: { code } });
-    if (existing) {
+    const promo = await prisma.promoCode.update({
+      where: { id: params.id },
+      data: {
+        code,
+        description: parsed.description !== undefined ? parsed.description : undefined,
+        discountType: parsed.discountType,
+        discountValue: parsed.discountValue,
+        scope: parsed.scope,
+        scopeProductId: nextScope === "PRODUCT" ? nextScopeProductId : parsed.scope ? null : undefined,
+        maxUses: parsed.maxUses !== undefined ? parsed.maxUses : undefined,
+        minSubtotal: parsed.minSubtotal !== undefined ? parsed.minSubtotal : undefined,
+        active: parsed.active,
+        startsAt: parsed.startsAt !== undefined ? (parsed.startsAt ? new Date(parsed.startsAt) : null) : undefined,
+        expiresAt: parsed.expiresAt !== undefined ? (parsed.expiresAt ? new Date(parsed.expiresAt) : null) : undefined,
+      },
+    });
+
+    return NextResponse.json({ promo });
+  } catch (err) {
+    console.error(`PATCH /api/admin/promos/${params?.id} failed:`, err);
+    return NextResponse.json(
+      { error: "Could not update promo code.", detail: err instanceof Error ? err.message : String(err) },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * DELETE /api/admin/promos/[id]   (admin only)
+ * Permanently deletes a promo code. Only allowed if it has never been
+ * redeemed — otherwise deactivate it instead (PATCH { active: false }),
+ * since deleting a redeemed code would break the PromoRedemption relation
+ * on past orders.
+ */
+export async function DELETE(req: Request, { params }: RouteParams) {
+  try {
+    if (!authorized(req)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const existing = await prisma.promoCode.findUnique({
+      where: { id: params.id },
+      include: { _count: { select: { redemptions: true } } },
+    });
+    if (!existing) {
+      return NextResponse.json({ error: "Promo code not found." }, { status: 404 });
+    }
+    if (existing._count.redemptions > 0) {
       return NextResponse.json(
-        { error: `Code "${code}" already exists.` },
+        { error: "This code has been redeemed and can't be deleted. Deactivate it instead." },
         { status: 409 }
       );
     }
 
-    const promo = await prisma.promoCode.create({
-      data: {
-        code,
-        description: parsed.description,
-        discountType: parsed.discountType,
-        discountValue: parsed.discountValue,
-        scope: parsed.scope,
-        scopeProductId: parsed.scope === "PRODUCT" ? parsed.scopeProductId : null,
-        maxUses: parsed.maxUses ?? null,
-        minSubtotal: parsed.minSubtotal ?? null,
-        startsAt: parsed.startsAt ? new Date(parsed.startsAt) : null,
-        expiresAt: parsed.expiresAt ? new Date(parsed.expiresAt) : null,
-      },
-    });
-
-    return NextResponse.json({ promo }, { status: 201 });
+    await prisma.promoCode.delete({ where: { id: params.id } });
+    return NextResponse.json({ success: true });
   } catch (err) {
-    // Catches Prisma errors (e.g. missing table from an undeployed migration),
-    // bugs in generateUniquePromoCode, DB connection issues, etc. Without this,
-    // the function crashes and the client sees an empty body instead of a
-    // useful error — which is the "Unexpected end of JSON input" you're hitting.
-    console.error("POST /api/admin/promos failed:", err);
+    console.error(`DELETE /api/admin/promos/${params?.id} failed:`, err);
     return NextResponse.json(
-      {
-        error: "Failed to create promo code.",
-        detail: err instanceof Error ? err.message : String(err),
-      },
+      { error: "Could not delete promo code.", detail: err instanceof Error ? err.message : String(err) },
       { status: 500 }
     );
   }
