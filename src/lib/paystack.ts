@@ -25,7 +25,7 @@ export interface PaystackInitializeResponse {
 
 /** Create a transaction and get the hosted checkout URL. Server-side only. */
 export async function initializeTransaction(
-  args: InitializeArgs
+  args: InitializeArgs,
 ): Promise<PaystackInitializeResponse> {
   const res = await fetch(`${PAYSTACK_BASE}/transaction/initialize`, {
     method: "POST",
@@ -66,7 +66,7 @@ export interface VerifiedTransaction {
  * truth for whether money was received. Never trust the browser redirect alone.
  */
 export async function verifyTransaction(
-  reference: string
+  reference: string,
 ): Promise<VerifiedTransaction> {
   const res = await fetch(
     `${PAYSTACK_BASE}/transaction/verify/${encodeURIComponent(reference)}`,
@@ -74,7 +74,7 @@ export async function verifyTransaction(
       method: "GET",
       headers: { Authorization: `Bearer ${secretKey()}` },
       cache: "no-store",
-    }
+    },
   );
 
   const json = await res.json();
@@ -101,7 +101,7 @@ export async function verifyTransaction(
  */
 export function isValidWebhookSignature(
   rawBody: string,
-  signature: string | null
+  signature: string | null,
 ): boolean {
   if (!signature) return false;
   const expected = crypto
@@ -117,4 +117,25 @@ export function isValidWebhookSignature(
 /** Generate a unique, readable payment reference. */
 export function newReference(prefix = "EPG"): string {
   return `${prefix}_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
+}
+
+/**
+ * Paystack Ghana charges a percentage fee per transaction (1.95% by default).
+ * Override with the PAYSTACK_FEE_PERCENT env var if your rate differs.
+ */
+const FEE_RATE = (() => {
+  const pct = Number(process.env.PAYSTACK_FEE_PERCENT);
+  return Number.isFinite(pct) && pct > 0 ? pct / 100 : 0.0195;
+})();
+
+/**
+ * Gross up an amount (in minor units / pesewas) so that AFTER Paystack deducts
+ * its percentage fee, you still net the original amount. Rounds up to the
+ * nearest pesewa so your payout never falls short.
+ *
+ * Example: GHS 25 (2500) -> 2550, i.e. the customer pays GHS 25.50 and you
+ * receive ~GHS 25.
+ */
+export function withPaystackFee(amountMinor: number): number {
+  return Math.ceil(amountMinor / (1 - FEE_RATE));
 }

@@ -1,8 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
-import { Bolt, Check, Clock, Download, Lock, ShieldCheck } from "@/components/icons";
+import { Bolt, Check, Clock, Download, Lock, Refresh, ShieldCheck, Tag } from "@/components/icons";
+
+// Retrying only makes sense for orders that never finished fulfilling.
+// FULFILLED is already done; FAILED means Paystack itself rejected the
+// payment (nothing to retry against).
+const RETRYABLE_STATUSES = new Set(["PENDING", "PAID", "OUT_OF_STOCK"]);
 
 interface SeriesPoint { date: string; label: string; amount: number; amountLabel: string }
 
@@ -58,6 +64,8 @@ export default function AdminPage() {
   const [product, setProduct] = useState("all");
   const [status, setStatus] = useState("all");
   const [bucket, setBucket] = useState<"day" | "week">("day");
+  const [retrying, setRetrying] = useState<string>("");
+  const [retryMessage, setRetryMessage] = useState<{ reference: string; text: string; ok: boolean } | null>(null);
 
   const filters = { from, to, product, status, bucket };
 
@@ -114,6 +122,37 @@ export default function AdminPage() {
     }
   }
 
+  async function retry(reference: string) {
+    setRetrying(reference);
+    setRetryMessage(null);
+    try {
+      const res = await fetch("/api/admin/retry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ reference }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result?.error || "Retry failed.");
+
+      setRetryMessage({
+        reference,
+        ok: Boolean(result.ok),
+        text: result.ok
+          ? result.category === "VOUCHER"
+            ? `Fulfilled — code ${result.voucherCode} dispensed and emailed.`
+            : "Fulfilled."
+          : `Still ${result.status}${result.message ? `: ${result.message}` : "."}`,
+      });
+
+      // Refresh the table so the new status/code shows up.
+      await load(token);
+    } catch (e: any) {
+      setRetryMessage({ reference, ok: false, text: e.message || "Retry failed." });
+    } finally {
+      setRetrying("");
+    }
+  }
+
   const stamp = () => new Date().toISOString().slice(0, 10);
 
   function setBucketAndLoad(next: "day" | "week") {
@@ -159,7 +198,7 @@ export default function AdminPage() {
             />
             {error && <p className="mt-3 rounded-lg bg-[#fce9e7] px-3 py-2 text-sm text-[#b23b30]">{error}</p>}
             <button onClick={() => load(token)} disabled={loading || !token} className="btn-primary mt-5 w-full disabled:opacity-60">
-              {loading ? "Checking\u2026" : "Sign in"}
+              {loading ? "Checking…" : "Sign in"}
             </button>
           </div>
         ) : (
@@ -170,6 +209,14 @@ export default function AdminPage() {
                 <p className="mt-1 text-sm text-ink-500">Inventory, revenue and recent orders.</p>
               </div>
               <button onClick={logout} className="btn-ghost">Sign out</button>
+            </div>
+            <div className="mt-3">
+              <Link
+                href="/admin/promos"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-[#e6e5e3] px-3 py-1.5 text-xs font-semibold text-ink-700 transition-colors hover:bg-[#f0efed]"
+              >
+                <Tag className="h-3.5 w-3.5" /> Promo codes
+              </Link>
             </div>
 
             {/* KPIs */}
@@ -251,14 +298,14 @@ export default function AdminPage() {
                   </select>
                 </Field>
                 <button onClick={() => load(token)} disabled={loading} className="btn-primary disabled:opacity-60">
-                  {loading ? "Loading\u2026" : "Apply"}
+                  {loading ? "Loading…" : "Apply"}
                 </button>
                 {hasFilters && <button onClick={clearFilters} className="btn-ghost">Clear</button>}
                 <button onClick={() => download("/api/admin/export", `edupass-orders-${stamp()}.csv`, "orders")} disabled={exporting !== ""} className="btn-ghost disabled:opacity-60">
-                  <Download className="h-4 w-4" /> {exporting === "orders" ? "Exporting\u2026" : "Export CSV"}
+                  <Download className="h-4 w-4" /> {exporting === "orders" ? "Exporting…" : "Export CSV"}
                 </button>
                 <button onClick={() => download("/api/admin/summary", `edupass-revenue-summary-${stamp()}.csv`, "summary")} disabled={exporting !== ""} className="btn-ghost disabled:opacity-60">
-                  <Download className="h-4 w-4" /> {exporting === "summary" ? "Exporting\u2026" : "Export summary"}
+                  <Download className="h-4 w-4" /> {exporting === "summary" ? "Exporting…" : "Export summary"}
                 </button>
               </div>
             </div>
@@ -277,6 +324,7 @@ export default function AdminPage() {
                     <th className="px-4 py-3 font-semibold">Amount</th>
                     <th className="px-4 py-3 font-semibold">Status</th>
                     <th className="px-4 py-3 font-semibold">Code</th>
+                    <th className="px-4 py-3 font-semibold">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -291,11 +339,29 @@ export default function AdminPage() {
                           {o.status}
                         </span>
                       </td>
-                      <td className="px-4 py-3 font-mono text-xs text-ink-700">{o.voucherCode ?? "\u2014"}</td>
+                      <td className="px-4 py-3 font-mono text-xs text-ink-700">{o.voucherCode ?? "—"}</td>
+                      <td className="px-4 py-3">
+                        {RETRYABLE_STATUSES.has(o.status) && (
+                          <button
+                            onClick={() => retry(o.reference)}
+                            disabled={retrying === o.reference}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-[#e6e5e3] px-2.5 py-1.5 text-xs font-semibold text-ink-700 transition-colors hover:bg-[#f0efed] disabled:opacity-60"
+                            title="Re-run fulfilment for this order"
+                          >
+                            <Refresh className={"h-3.5 w-3.5" + (retrying === o.reference ? " animate-spin" : "")} />
+                            {retrying === o.reference ? "Retrying…" : "Retry"}
+                          </button>
+                        )}
+                        {retryMessage?.reference === o.reference && (
+                          <p className={"mt-1 max-w-[220px] text-xs " + (retryMessage.ok ? "text-accent-700" : "text-[#b23b30]")}>
+                            {retryMessage.text}
+                          </p>
+                        )}
+                      </td>
                     </tr>
                   ))}
                   {data!.orders.length === 0 && (
-                    <tr><td colSpan={6} className="px-4 py-8 text-center text-ink-500">No orders match these filters.</td></tr>
+                    <tr><td colSpan={7} className="px-4 py-8 text-center text-ink-500">No orders match these filters.</td></tr>
                   )}
                 </tbody>
               </table>

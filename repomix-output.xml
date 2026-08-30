@@ -1,0 +1,5145 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+branch/
+  src/
+    app/
+      globals.css
+      page.tsx
+    components/
+      HeroScene.tsx
+  package.json
+data/
+  sample-vouchers.csv
+preview/
+  admin.html
+  index.html
+  screenshot-admin.png
+prisma/
+  schema.postgres.prisma
+  schema.prisma
+  seed.ts
+public/
+  flyer.png
+  fred-oppong.png
+  logo-fc.png
+  student-owass.png
+scripts/
+  stock-report.ts
+  upload-vouchers.ts
+src/
+  app/
+    about/
+      page.tsx
+    admin/
+      page.tsx
+    api/
+      admin/
+        export/
+          route.ts
+        overview/
+          route.ts
+        summary/
+          route.ts
+      paystack/
+        initialize/
+          route.ts
+        verify/
+          route.ts
+        webhook/
+          route.ts
+      stock/
+        route.ts
+    checkout/
+      page.tsx
+    contact/
+      page.tsx
+    privacy/
+      page.tsx
+    refund/
+      page.tsx
+    success/
+      page.tsx
+    terms/
+      page.tsx
+    apple-icon.png
+    globals.css
+    icon.png
+    layout.tsx
+    page.tsx
+    robot.ts
+    sitemap.ts
+  components/
+    Footer.tsx
+    icons.tsx
+    Navbar.tsx
+    ProductCard.tsx
+  lib/
+    adminFilters.ts
+    db.ts
+    email.ts
+    fulfilment.ts
+    inventory.ts
+    paystack.ts
+    products.ts
+    whatsapp.ts
+.gitignore
+next-env.d.ts
+next.config.mjs
+package.json
+postcss.config.mjs
+README.md
+tailwind.config.ts
+tsconfig.json
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="branch/src/app/globals.css">
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-[#f7f9fc] text-ink-900 font-sans antialiased;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+    min-height: 44px;
+  }
+  .btn-primary {
+    @apply btn bg-brand-600 text-white shadow-soft hover:bg-brand-700 focus-visible:ring-brand-500;
+  }
+  .btn-accent {
+    @apply btn bg-accent-600 text-white shadow-soft hover:bg-accent-700 focus-visible:ring-accent-500;
+  }
+  .btn-ghost {
+    @apply btn border border-[#e6e5e3] bg-white text-ink-900 hover:bg-[#f0efed] focus-visible:ring-brand-500;
+  }
+  .card {
+    @apply rounded-xl border border-[#e6e5e3] bg-white shadow-card;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+
+/* --- Hero motion graphic (graduation / 8 A1s celebration) --- */
+.hero-decor {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.hero-glow {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(64px);
+}
+.hero-glow-1 {
+  width: 340px; height: 340px;
+  background: #8eb6ff; opacity: .45;
+  top: -90px; left: -60px;
+  animation: heroDrift 15s ease-in-out infinite;
+}
+.hero-glow-2 {
+  width: 300px; height: 300px;
+  background: #10b981; opacity: .3;
+  bottom: -100px; right: -50px;
+  animation: heroDrift 19s ease-in-out infinite reverse;
+}
+@keyframes heroDrift {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(28px, 22px); }
+}
+/* WebGL hero scene — sits above the photo veil, below the copy */
+.hero-3d {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.hero-3d canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+.grade-badge {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 42px; height: 42px;
+  border-radius: 9999px;
+  background: #ffffff;
+  color: #1746a2;
+  font-family: Sora, Inter, system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  border: 2px solid #1746a2;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, .12);
+  opacity: .9;
+  animation: gradePop 6s ease-in-out infinite;
+}
+@keyframes gradePop {
+  0%, 100% { transform: scale(.92) translateY(0); opacity: .8; }
+  50% { transform: scale(1.06) translateY(-10px); opacity: 1; }
+}
+.confetti {
+  position: absolute;
+  top: -16px;
+  width: 9px; height: 14px;
+  border-radius: 2px;
+  opacity: .8;
+  animation-name: confettiFall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@keyframes confettiFall {
+  0% { transform: translateY(-20px) rotate(0deg); opacity: .9; }
+  100% { transform: translateY(560px) rotate(560deg); opacity: 0; }
+}
+.results-slip {
+  animation: slipIn .9s ease-out both, slipFloat 6s ease-in-out 1s infinite;
+}
+@keyframes slipIn {
+  0% { transform: translateY(26px) rotate(-3deg); opacity: 0; }
+  100% { transform: translateY(0) rotate(-3deg); opacity: 1; }
+}
+@keyframes slipFloat {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-9px) rotate(-2deg); }
+}
+/* --- Hero student celebration photo --- */
+.hero-photo {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.hero-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 28%;
+  opacity: .75;
+  animation: heroZoom 20s ease-in-out infinite;
+}
+.hero-photo-veil {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(60% 55% at 50% 42%, rgba(247,249,252,.35), rgba(247,249,252,.72) 78%),
+    linear-gradient(to bottom, rgba(247,249,252,.45), rgba(247,249,252,.8));
+}
+@keyframes heroZoom {
+  0%, 100% { transform: scale(1.06); }
+  50% { transform: scale(1.16); }
+}
+</file>
+
+<file path="branch/src/app/page.tsx">
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import { ProductCard } from "@/components/ProductCard";
+import { HeroScene } from "@/components/HeroScene";
+import { PRODUCTS } from "@/lib/products";
+import { Bolt, Clock, Lock, Mail, ShieldCheck, Star } from "@/components/icons";
+
+const trust = [
+  { icon: Bolt, title: "Instant delivery", body: "Voucher PINs appear on-screen and hit your inbox seconds after payment." },
+  { icon: ShieldCheck, title: "Verified payments", body: "Every transaction is confirmed server-side with Paystack before release." },
+  { icon: Lock, title: "Secure by design", body: "We never see your card details. Payments are handled by Paystack." },
+];
+
+const steps = [
+  { n: "1", title: "Choose a product", body: "Pick your WASSCE, Private WASSCE or BECE voucher — or a university form." },
+  { n: "2", title: "Pay with Paystack", body: "Card, Mobile Money or bank. Fast, secure and fully verified." },
+  { n: "3", title: "Get it instantly", body: "Vouchers show immediately + emailed. Forms connect you on WhatsApp." },
+];
+
+const reviews = [
+  { name: "Ama D.", role: "WASSCE candidate", text: "Paid with MoMo and got my checker PIN in seconds. So easy!" },
+  { name: "Kofi B.", role: "Parent", text: "Bought a BECE voucher for my daughter late at night — instant and legit." },
+  { name: "Selorm K.", role: "Applicant", text: "The university form WhatsApp help was quick and personal. Recommended." },
+];
+
+export default function HomePage() {
+  return (
+    <>
+      <Navbar />
+
+      {/* Hero */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-brand-50 to-[#f7f9fc]" />
+        {/* Student celebration photo background (Opoku Ware) */}
+<div aria-hidden="true" className="hero-photo -z-10">
+  <img src="/student-owass.png" alt="" />
+  <span className="hero-photo-veil" />
+</div>
+
+        {/* Branded motion graphic: soft glows + 3D graduation/voucher scene */}
+        <div aria-hidden="true" className="hero-decor -z-10">
+          <span className="hero-glow hero-glow-1" />
+          <span className="hero-glow hero-glow-2" />
+          <HeroScene />
+          {[0, 1, 2].map((i) => (
+            <span
+              key={`grade-${i}`}
+              className="grade-badge"
+              style={{ left: `${16 + i * 30}%`, top: `${32 + (i % 2) * 32}%`, animationDelay: `${i * 1.3}s` }}
+            >
+              A1
+            </span>
+          ))}
+          {[
+            "#1746a2", "#10b981", "#598eff", "#059669", "#2f66f6", "#8eb6ff",
+            "#1746a2", "#10b981", "#598eff", "#059669", "#2f66f6", "#8eb6ff",
+          ].map((color, i) => (
+            <span
+              key={`confetti-${i}`}
+              className="confetti"
+              style={{
+                left: `${(i * 8 + 4) % 100}%`,
+                background: color,
+                animationDuration: `${5.5 + (i % 4)}s`,
+                animationDelay: `${(i % 6) * 0.5}s`,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Floating Opoku Ware results slip — 8 A1s */}
+        <div
+          aria-hidden="true"
+          className="results-slip absolute right-8 top-12 z-0 hidden w-56 rounded-xl border border-brand-100 bg-white p-4 shadow-card lg:block"
+        >
+          <p className="text-[10px] font-bold uppercase tracking-wider text-brand-700">Opoku Ware School</p>
+          <p className="font-display text-sm font-extrabold text-ink-900">WASSCE Results</p>
+          <ul className="mt-2 space-y-1 text-xs text-ink-700">
+            <li className="flex justify-between"><span>Core Mathematics</span><span className="font-extrabold text-accent-600">A1</span></li>
+            <li className="flex justify-between"><span>English Language</span><span className="font-extrabold text-accent-600">A1</span></li>
+            <li className="flex justify-between"><span>Integrated Science</span><span className="font-extrabold text-accent-600">A1</span></li>
+            <li className="flex justify-between"><span>Elective Maths</span><span className="font-extrabold text-accent-600">A1</span></li>
+          </ul>
+          <p className="mt-2 rounded-lg bg-accent-500/10 px-2 py-1 text-center text-xs font-extrabold text-accent-700">8 A1s · Distinction</p>
+        </div>
+
+        <div className="relative z-10 mx-auto max-w-6xl px-5 py-16 sm:py-20">
+          <div className="mx-auto max-w-2xl text-center">
+            <span className="chip mx-auto"><ShieldCheck width={14} height={14} /> Trusted by students across Ghana</span>
+            <h1 className="mt-5 font-display text-4xl font-800 leading-tight tracking-tight text-ink-900 sm:text-5xl">
+              Exam vouchers, delivered <span className="text-brand-600">instantly.</span>
+            </h1>
+            <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-ink-700">
+              Buy WASSCE, Private WASSCE and BECE result checker vouchers online and get your PIN
+              in seconds. Need a university admission form? We'll guide you personally on WhatsApp.
+            </p>
+            <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <a href="#products" className="btn-primary w-full sm:w-auto">Browse vouchers</a>
+              <a href="#how" className="btn-ghost w-full sm:w-auto">How it works</a>
+            </div>
+            <div className="mt-6 flex items-center justify-center gap-1.5 text-sm text-ink-500">
+              <span className="flex text-accent-600">
+                {Array.from({ length: 5 }).map((_, i) => (<Star key={i} width={16} height={16} />))}
+              </span>
+              <span className="ml-1">Rated 4.9/5 by 2,300+ buyers</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust strip */}
+      <section className="mx-auto -mt-6 max-w-6xl px-5">
+        <div className="grid gap-4 sm:grid-cols-3">
+          {trust.map((t) => (
+            <div key={t.title} className="card flex items-start gap-3 p-5">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-600">
+                <t.icon />
+              </span>
+              <div>
+                <p className="font-600 text-ink-900">{t.title}</p>
+                <p className="mt-0.5 text-sm text-ink-500">{t.body}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Promotional flyer */}
+      <section className="mx-auto max-w-6xl px-5 pt-14">
+        <div className="grid items-center gap-6 rounded-xl border border-brand-100 bg-white p-6 shadow-card md:grid-cols-[300px_1fr] md:p-8">
+          <img
+            src="/flyer.png"
+            alt="CENTER FORWARD VENTURES — WAEC results vouchers: BECE, WASSCE and NOVDEC at GHS 25 each"
+            className="mx-auto w-full max-w-[300px] rounded-lg border border-[#e6e5e3]"
+          />
+          <div>
+            <span className="chip">Current offer</span>
+            <h2 className="mt-3 font-display text-2xl font-800 text-ink-900 sm:text-3xl">WAEC result vouchers — GHS 25 each</h2>
+            <p className="mt-2 text-ink-700">
+              BECE, WASSCE and NOVDEC result checker vouchers, delivered instantly to your email after payment. A trusted service by CENTER FORWARD VENTURES.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <a href="#products" className="btn-primary">Buy a voucher</a>
+              <a href="https://wa.me/233256767495" target="_blank" rel="noopener noreferrer" className="btn-ghost">Chat on WhatsApp</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Products */}
+      <section id="products" className="mx-auto max-w-6xl px-5 py-16">
+        <div className="mb-8 max-w-xl">
+          <h2 className="font-display text-2xl font-800 text-ink-900 sm:text-3xl">Choose your voucher</h2>
+          <p className="mt-2 text-ink-500">All vouchers are single-use official result-checker PINs. Delivered instantly after payment.</p>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {PRODUCTS.map((p) => (<ProductCard key={p.id} product={p} />))}
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section id="how" className="bg-white">
+        <div className="mx-auto max-w-6xl px-5 py-16">
+          <h2 className="font-display text-2xl font-800 text-ink-900 sm:text-3xl">How it works</h2>
+          <div className="mt-8 grid gap-6 md:grid-cols-3">
+            {steps.map((s) => (
+              <div key={s.n} className="relative rounded-xl border border-[#e6e5e3] p-6">
+                <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-600 font-display text-sm font-700 text-white">{s.n}</span>
+                <p className="mt-4 font-600 text-ink-900">{s.title}</p>
+                <p className="mt-1 text-sm text-ink-500">{s.body}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-ink-500">
+            <span className="inline-flex items-center gap-2"><Clock width={16} height={16} /> Available 24/7</span>
+            <span className="inline-flex items-center gap-2"><Mail width={16} height={16} /> Emailed receipt + code</span>
+            <span className="inline-flex items-center gap-2"><Lock width={16} height={16} /> Paystack secured</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Reviews */}
+      <section className="mx-auto max-w-6xl px-5 py-16">
+        <h2 className="font-display text-2xl font-800 text-ink-900 sm:text-3xl">What buyers say</h2>
+        <div className="mt-8 grid gap-6 md:grid-cols-3">
+          {reviews.map((r) => (
+            <figure key={r.name} className="card p-6">
+              <div className="flex text-accent-600">
+                {Array.from({ length: 5 }).map((_, i) => (<Star key={i} width={15} height={15} />))}
+              </div>
+              <blockquote className="mt-3 text-sm leading-relaxed text-ink-700">“{r.text}”</blockquote>
+              <figcaption className="mt-4 text-sm">
+                <span className="font-600 text-ink-900">{r.name}</span>
+                <span className="text-ink-500"> · {r.role}</span>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      </section>
+
+      <Footer />
+    </>
+  );
+}
+</file>
+
+<file path="branch/src/components/HeroScene.tsx">
+"use client";
+
+/**
+ * HeroScene — WebGL hero graphic for EduPass GH.
+ *
+ * Purely decorative (aria-hidden). Renders floating 3D objects that map to the
+ * product: graduation caps, voucher/PIN cards, coins and a soft particle field,
+ * all in the existing brand palette (brand-600 #1746a2 / accent #10b981).
+ *
+ * Design constraints honoured:
+ *  - Light-mode, trust-forward. No dark canvas, no AI purple gradients.
+ *  - FOV 55 (product-scale range 45-75).
+ *  - prefers-reduced-motion: renders a single static frame, no loop.
+ *  - Pauses rendering when tab hidden or hero is scrolled out of view.
+ *  - Full dispose() of geometries + materials on unmount (no VRAM leak).
+ *  - Graceful no-op if WebGL is unavailable.
+ */
+
+import { useEffect, useRef } from "react";
+import * as THREE from "three";
+
+const fov2rad = (deg: number) => (deg * Math.PI) / 180;
+
+const BRAND = 0x1746a2;
+const BRAND_LIGHT = 0x598eff;
+const ACCENT = 0x10b981;
+const GOLD = 0xf5b74f;
+const PAPER = 0xffffff;
+
+export function HeroScene() {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host) return;
+
+    const reduced =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+        powerPreference: "high-performance",
+      });
+    } catch {
+      return; // no WebGL — the CSS gradient behind us is the fallback
+    }
+
+    const width = host.clientWidth || 1;
+    const height = host.clientHeight || 1;
+
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
+    host.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(55, width / height, 0.1, 100);
+    camera.position.set(0, 0, 14);
+
+    // ---- tracked resources -------------------------------------------------
+    const geometries: THREE.BufferGeometry[] = [];
+    const materials: THREE.Material[] = [];
+    const track = <T extends THREE.BufferGeometry | THREE.Material>(r: T): T => {
+      if (r instanceof THREE.BufferGeometry) geometries.push(r);
+      else materials.push(r);
+      return r;
+    };
+
+    // ---- lighting: soft, bright, education-friendly ------------------------
+    scene.add(new THREE.HemisphereLight(0xffffff, 0xc9d8f5, 1.5));
+    const key = new THREE.DirectionalLight(0xffffff, 2.1);
+    key.position.set(4, 6, 8);
+    scene.add(key);
+    const rimBlue = new THREE.PointLight(BRAND_LIGHT, 60, 40);
+    rimBlue.position.set(-9, 2, 3);
+    scene.add(rimBlue);
+    const rimGreen = new THREE.PointLight(ACCENT, 45, 40);
+    rimGreen.position.set(9, -3, 2);
+    scene.add(rimGreen);
+
+    const root = new THREE.Group();
+    scene.add(root);
+
+    type Floater = {
+      obj: THREE.Object3D;
+      spin: THREE.Vector3;
+      amp: number;
+      speed: number;
+      phase: number;
+      baseY: number;
+      depth: number;
+    };
+    const floaters: Floater[] = [];
+
+    const addFloater = (
+      obj: THREE.Object3D,
+      x: number,
+      y: number,
+      z: number,
+      scale = 1
+    ) => {
+      obj.position.set(x, y, z);
+      obj.scale.setScalar(scale);
+      // tilt toward the camera so flat objects never present edge-on
+      obj.rotation.set(
+        -0.5 + (Math.random() - 0.5) * 0.35,
+        Math.random() * Math.PI * 2,
+        (Math.random() - 0.5) * 0.35
+      );
+      root.add(obj);
+      floaters.push({
+        obj,
+        spin: new THREE.Vector3(
+          (Math.random() - 0.5) * 0.05,
+          0.08 + Math.random() * 0.1,
+          (Math.random() - 0.5) * 0.035
+        ),
+        amp: 0.28 + Math.random() * 0.4,
+        speed: 0.35 + Math.random() * 0.4,
+        phase: Math.random() * Math.PI * 2,
+        baseY: y,
+        depth: z,
+      });
+      return obj;
+    };
+
+    // ---- graduation cap ----------------------------------------------------
+    const capBoardGeo = track(new THREE.BoxGeometry(1.9, 0.11, 1.9));
+    const capCrownGeo = track(new THREE.CylinderGeometry(0.46, 0.58, 0.58, 28));
+    const buttonGeo = track(new THREE.SphereGeometry(0.09, 16, 16));
+    const tasselGeo = track(new THREE.CylinderGeometry(0.022, 0.022, 1.0, 8));
+
+    const capMat = track(
+      new THREE.MeshStandardMaterial({
+        color: BRAND,
+        roughness: 0.42,
+        metalness: 0.12,
+      })
+    );
+    const goldMat = track(
+      new THREE.MeshStandardMaterial({
+        color: GOLD,
+        roughness: 0.28,
+        metalness: 0.65,
+      })
+    );
+
+    const makeCap = () => {
+      const g = new THREE.Group();
+      const board = new THREE.Mesh(capBoardGeo, capMat);
+      board.position.y = 0.33;
+      board.rotation.y = Math.PI / 4;
+      const crown = new THREE.Mesh(capCrownGeo, capMat);
+      const btn = new THREE.Mesh(buttonGeo, goldMat);
+      btn.position.y = 0.42;
+      const tassel = new THREE.Mesh(tasselGeo, goldMat);
+      tassel.position.set(0.62, -0.16, 0.62);
+      tassel.rotation.z = 0.22;
+      g.add(board, crown, btn, tassel);
+      return g;
+    };
+
+    // ---- voucher / PIN card ------------------------------------------------
+    const cardGeo = track(new THREE.BoxGeometry(2.5, 1.55, 0.075));
+    const stripeGeo = track(new THREE.BoxGeometry(2.5, 0.3, 0.02));
+    const pinGeo = track(new THREE.BoxGeometry(0.26, 0.12, 0.02));
+
+    const cardMat = track(
+      new THREE.MeshStandardMaterial({
+        color: PAPER,
+        roughness: 0.34,
+        metalness: 0.04,
+      })
+    );
+    const stripeMatBlue = track(
+      new THREE.MeshStandardMaterial({ color: BRAND, roughness: 0.4 })
+    );
+    const stripeMatGreen = track(
+      new THREE.MeshStandardMaterial({ color: ACCENT, roughness: 0.4 })
+    );
+    const pinMat = track(
+      new THREE.MeshStandardMaterial({ color: 0xcbd8ef, roughness: 0.6 })
+    );
+
+    const makeCard = (green = false) => {
+      const g = new THREE.Group();
+      const body = new THREE.Mesh(cardGeo, cardMat);
+      const stripe = new THREE.Mesh(
+        stripeGeo,
+        green ? stripeMatGreen : stripeMatBlue
+      );
+      stripe.position.set(0, 0.5, 0.05);
+      g.add(body, stripe);
+      // dotted "PIN" row — reads as a redacted voucher code
+      for (let i = 0; i < 4; i++) {
+        const d = new THREE.Mesh(pinGeo, pinMat);
+        d.position.set(-0.72 + i * 0.42, -0.18, 0.05);
+        g.add(d);
+      }
+      return g;
+    };
+
+    // ---- coin (GHS / value) ------------------------------------------------
+    const coinGeo = track(new THREE.CylinderGeometry(0.62, 0.62, 0.14, 40));
+    const coinRingGeo = track(new THREE.TorusGeometry(0.46, 0.055, 12, 36));
+    const coinMat = track(
+      new THREE.MeshStandardMaterial({
+        color: ACCENT,
+        roughness: 0.3,
+        metalness: 0.55,
+      })
+    );
+
+    const makeCoin = () => {
+      const g = new THREE.Group();
+      const c = new THREE.Mesh(coinGeo, coinMat);
+      c.rotation.x = Math.PI / 2;
+      const ring = new THREE.Mesh(coinRingGeo, goldMat);
+      ring.position.z = 0.09;
+      g.add(c, ring);
+      return g;
+    };
+
+    // ---- checkmark shield (trust) -----------------------------------------
+    const shieldShape = new THREE.Shape();
+    shieldShape.moveTo(0, 1);
+    shieldShape.bezierCurveTo(0.85, 0.78, 0.92, 0.2, 0.9, -0.28);
+    shieldShape.bezierCurveTo(0.62, -0.72, 0.3, -0.95, 0, -1.05);
+    shieldShape.bezierCurveTo(-0.3, -0.95, -0.62, -0.72, -0.9, -0.28);
+    shieldShape.bezierCurveTo(-0.92, 0.2, -0.85, 0.78, 0, 1);
+    const shieldGeo = track(
+      new THREE.ExtrudeGeometry(shieldShape, {
+        depth: 0.16,
+        bevelEnabled: true,
+        bevelThickness: 0.04,
+        bevelSize: 0.04,
+        bevelSegments: 3,
+      })
+    );
+    const shieldMat = track(
+      new THREE.MeshStandardMaterial({
+        color: ACCENT,
+        roughness: 0.35,
+        metalness: 0.3,
+      })
+    );
+
+    // ---- layout (responsive) ----------------------------------------------
+    // Objects are positioned relative to the live camera frustum so they always
+    // hug the outer edges and never cross the centre copy, at any viewport.
+    // Each entry: [factory, side, edge inset, y fraction of half-height, z, scale]
+    type Spec = {
+      make: () => THREE.Object3D;
+      side: -1 | 1;
+      inset: number; // 0 = at frustum edge, larger = further inward
+      yf: number; // -1..1 fraction of half visible height
+      z: number;
+      scale: number;
+      mobile: boolean; // keep on narrow screens?
+    };
+
+    const specs: Spec[] = [
+      { make: makeCap, side: -1, inset: 1.4, yf: 0.34, z: -1.2, scale: 1.3, mobile: true },
+      { make: () => makeCard(true), side: -1, inset: 3.0, yf: -0.24, z: -2.6, scale: 1.05, mobile: false },
+      { make: makeCoin, side: -1, inset: 5.2, yf: 0.14, z: -1.0, scale: 1.2, mobile: false },
+      { make: makeCap, side: -1, inset: 2.2, yf: -0.52, z: -3.4, scale: 0.9, mobile: true },
+      { make: () => new THREE.Mesh(shieldGeo, shieldMat), side: -1, inset: 6.0, yf: 0.6, z: -3.8, scale: 0.75, mobile: false },
+
+      { make: makeCap, side: 1, inset: 1.6, yf: -0.32, z: -1.6, scale: 1.15, mobile: true },
+      { make: makeCard, side: 1, inset: 3.6, yf: -0.6, z: -1.1, scale: 1.05, mobile: false },
+      { make: makeCoin, side: 1, inset: 2.4, yf: -0.06, z: -2.8, scale: 1.0, mobile: false },
+      { make: () => new THREE.Mesh(shieldGeo, shieldMat), side: 1, inset: 5.4, yf: -0.72, z: -2.2, scale: 0.8, mobile: false },
+      { make: makeCoin, side: 1, inset: 6.6, yf: -0.36, z: -3.6, scale: 0.78, mobile: true },
+    ];
+
+    const built = specs.map((spec) => {
+      const obj = spec.make();
+      const f = addFloater(obj, 0, 0, spec.z, spec.scale);
+      return { spec, obj: f };
+    });
+
+    // Position every object from the current frustum. Called on init + resize.
+    const layout = () => {
+      const narrow = (host.clientWidth || 1) < 768;
+      const vh = 2 * camera.position.z * Math.tan(fov2rad(camera.fov) / 2);
+      const vw = vh * camera.aspect;
+
+      for (const { spec, obj } of built) {
+        // Narrow screens: the copy fills the viewport, so no solid objects at
+        // all — the particle field alone carries the depth. Guarantees the
+        // headline is never obstructed on phones.
+        obj.visible = !narrow;
+        if (!obj.visible) continue;
+
+        const edge = vw / 2;
+        const x = spec.side * Math.max(edge - spec.inset, edge * 0.62);
+        const y = (vh / 2) * spec.yf;
+
+        obj.position.x = x;
+        const rec = floaters.find((fl) => fl.obj === obj);
+        if (rec) rec.baseY = y;
+        obj.position.y = y;
+        obj.scale.setScalar(spec.scale);
+      }
+    };
+    layout();
+
+    // ---- particle field ----------------------------------------------------
+    const COUNT = 260;
+    const pts = new Float32Array(COUNT * 3);
+    for (let i = 0; i < COUNT; i++) {
+      pts[i * 3] = (Math.random() - 0.5) * 30;
+      pts[i * 3 + 1] = (Math.random() - 0.5) * 16;
+      pts[i * 3 + 2] = -Math.random() * 14;
+    }
+    const dustGeo = track(new THREE.BufferGeometry());
+    dustGeo.setAttribute("position", new THREE.BufferAttribute(pts, 3));
+    const dustMat = track(
+      new THREE.PointsMaterial({
+        color: BRAND_LIGHT,
+        size: 0.085,
+        transparent: true,
+        opacity: 0.55,
+        sizeAttenuation: true,
+        depthWrite: false,
+      })
+    );
+    const dust = new THREE.Points(dustGeo, dustMat);
+    scene.add(dust);
+
+    // ---- interaction -------------------------------------------------------
+    let pointerX = 0;
+    let pointerY = 0;
+    let targetX = 0;
+    let targetY = 0;
+
+    const onPointerMove = (e: PointerEvent) => {
+      targetX = (e.clientX / window.innerWidth) * 2 - 1;
+      targetY = (e.clientY / window.innerHeight) * 2 - 1;
+    };
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
+
+    const onResize = () => {
+      const w = host.clientWidth || 1;
+      const h = host.clientHeight || 1;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+      layout();
+    };
+    const ro = new ResizeObserver(onResize);
+    ro.observe(host);
+
+    // pause when off-screen or tab hidden
+    let visible = true;
+    const io = new IntersectionObserver(
+      (entries) => {
+        visible = entries[0]?.isIntersecting ?? true;
+      },
+      { threshold: 0 }
+    );
+    io.observe(host);
+
+    let hidden = document.hidden;
+    const onVis = () => {
+      hidden = document.hidden;
+    };
+    document.addEventListener("visibilitychange", onVis);
+
+    // ---- render loop -------------------------------------------------------
+    const clock = new THREE.Clock();
+    let raf = 0;
+    let disposed = false;
+
+    const renderFrame = () => {
+      const t = clock.getElapsedTime();
+
+      pointerX += (targetX - pointerX) * 0.045;
+      pointerY += (targetY - pointerY) * 0.045;
+
+      for (const f of floaters) {
+        f.obj.rotation.x += f.spin.x * 0.01;
+        f.obj.rotation.y += f.spin.y * 0.01;
+        f.obj.rotation.z += f.spin.z * 0.01;
+        f.obj.position.y = f.baseY + Math.sin(t * f.speed + f.phase) * f.amp;
+      }
+
+      // subtle parallax — depth-scaled so far objects move less
+      root.position.x = -pointerX * 0.45;
+      root.position.y = pointerY * 0.3;
+      root.rotation.y = pointerX * 0.06;
+      root.rotation.x = pointerY * 0.035;
+
+      dust.rotation.y = t * 0.012;
+      dust.position.x = -pointerX * 0.3;
+
+      renderer.render(scene, camera);
+    };
+
+    const loop = () => {
+      if (disposed) return;
+      raf = requestAnimationFrame(loop);
+      if (!visible || hidden) return;
+      renderFrame();
+    };
+
+    if (reduced) {
+      renderer.render(scene, camera); // one static frame
+    } else {
+      loop();
+    }
+
+    // ---- teardown ----------------------------------------------------------
+    return () => {
+      disposed = true;
+      cancelAnimationFrame(raf);
+      window.removeEventListener("pointermove", onPointerMove);
+      document.removeEventListener("visibilitychange", onVis);
+      ro.disconnect();
+      io.disconnect();
+
+      geometries.forEach((g) => g.dispose());
+      materials.forEach((m) => m.dispose());
+      renderer.dispose();
+      if (renderer.domElement.parentNode === host) {
+        host.removeChild(renderer.domElement);
+      }
+    };
+  }, []);
+
+  return <div ref={hostRef} aria-hidden="true" className="hero-3d" />;
+}
+
+export default HeroScene;
+</file>
+
+<file path="branch/package.json">
+{
+  "name": "exam-voucher-store",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Secure, automated storefront for selling digital exam vouchers (WASSCE, Private WASSCE, BECE) and handling university form inquiries via Paystack.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "vouchers:upload": "tsx scripts/upload-vouchers.ts",
+    "vouchers:stock": "tsx scripts/stock-report.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.18.0",
+    "@sendgrid/mail": "^8.1.3",
+    "next": "^14.2.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "three": "^0.185.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@types/three": "^0.185.1",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.40",
+    "prisma": "^5.18.0",
+    "tailwindcss": "^3.4.7",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.4"
+  }
+}
+</file>
+
+<file path="src/app/about/page.tsx">
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+
+export const metadata = {
+  title: "About Us",
+  description:
+    "EduPass GH is operated by CENTER FORWARD VENTURES, selling instant WASSCE, Private WASSCE and BECE result-checker vouchers and assisted university admission forms in Ghana.",
+};
+
+export default function AboutPage() {
+  return (
+    <>
+      <Navbar />
+      <main className="mx-auto max-w-3xl px-5 py-14">
+        <h1 className="font-display text-3xl font-800 text-ink-900">
+          About EduPass GH
+        </h1>
+        <p className="mt-4 leading-relaxed text-ink-700">
+          EduPass GH is an online store operated by{" "}
+          <strong>CENTER FORWARD VENTURES</strong>, a Ghanaian business. We make
+          it fast, safe and simple to buy official result-checker vouchers and
+          university admission forms online — no queues, no stress.
+        </p>
+
+        <h2 className="mt-8 font-display text-xl font-700 text-ink-900">
+          What we offer
+        </h2>
+        <ul className="mt-3 list-disc space-y-1.5 pl-5 text-ink-700">
+          <li>
+            WASSCE, Private (Nov/Dec) WASSCE and BECE result-checker vouchers —
+            delivered instantly.
+          </li>
+          <li>Assisted purchase of university admission forms.</li>
+        </ul>
+
+        <h2 className="mt-8 font-display text-xl font-700 text-ink-900">
+          Why students and parents trust us
+        </h2>
+        <ul className="mt-3 list-disc space-y-1.5 pl-5 text-ink-700">
+          <li>
+            Instant delivery — your PIN appears on screen and is emailed to you.
+          </li>
+          <li>
+            Payments secured by Paystack (mobile money and cards). We never see
+            or store your card details.
+          </li>
+          <li>Real human support on WhatsApp and email.</li>
+        </ul>
+
+        <div className="mt-8 rounded-xl border border-[#e6e5e3] bg-[#f7f9fc] p-5 text-sm text-ink-700">
+          <strong>Please note:</strong> EduPass GH is not affiliated with, or
+          endorsed by, WAEC. The vouchers we sell are official result-checker
+          PINs that we resell for your convenience.
+        </div>
+
+        <h2 className="mt-8 font-display text-xl font-700 text-ink-900">
+          Business details
+        </h2>
+        <ul className="mt-3 list-disc space-y-1.5 pl-5 text-ink-700">
+          <li>Trading name: EduPass GH</li>
+          <li>Operated by: CENTER FORWARD VENTURES (Ghana)</li>
+          <li>
+            Email:{" "}
+            <a
+              href="mailto:support@edupassgh.com"
+              className="text-brand-600 hover:text-brand-700"
+            >
+              support@edupassgh.com
+            </a>
+          </li>
+          <li>
+            WhatsApp:{" "}
+            <a
+              href="https://wa.me/233256767495"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-brand-600 hover:text-brand-700"
+            >
+              +233 25 676 7495
+            </a>
+          </li>
+        </ul>
+      </main>
+      <Footer />
+    </>
+  );
+}
+</file>
+
+<file path="src/app/contact/page.tsx">
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import { Mail, MessageCircle } from "@/components/icons";
+
+export const metadata = {
+  title: "Contact Us",
+  description:
+    "Get help with your EduPass GH order. Reach us by email at support@edupassgh.com or on WhatsApp at +233 25 676 7495.",
+};
+
+export default function ContactPage() {
+  return (
+    <>
+      <Navbar />
+      <main className="mx-auto max-w-3xl px-5 py-14">
+        <h1 className="font-display text-3xl font-800 text-ink-900">
+          Contact us
+        </h1>
+        <p className="mt-4 leading-relaxed text-ink-700">
+          Have a question or need help with an order? We are happy to help — and
+          we usually reply within a few hours.
+        </p>
+
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          <a
+            href="mailto:support@edupassgh.com"
+            className="card flex items-center gap-3 p-5 hover:border-brand-600"
+          >
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-50 text-brand-600">
+              <Mail width={20} height={20} />
+            </span>
+            <span>
+              <span className="block text-xs text-ink-500">Email</span>
+              <span className="block font-600 text-ink-900">
+                support@edupassgh.com
+              </span>
+            </span>
+          </a>
+          <a
+            href="https://wa.me/233256767495"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="card flex items-center gap-3 p-5 hover:border-brand-600"
+          >
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-accent-500/10 text-accent-700">
+              <MessageCircle width={20} height={20} />
+            </span>
+            <span>
+              <span className="block text-xs text-ink-500">WhatsApp</span>
+              <span className="block font-600 text-ink-900">
+                +233 25 676 7495
+              </span>
+            </span>
+          </a>
+        </div>
+
+        <h2 className="mt-8 font-display text-xl font-700 text-ink-900">
+          Support hours
+        </h2>
+        <p className="mt-3 text-ink-700">
+          Monday to Saturday, 8:00am – 9:00pm (GMT). Messages sent outside these
+          hours are answered the next morning.
+        </p>
+
+        <div className="mt-6 rounded-xl border border-[#e6e5e3] bg-[#f7f9fc] p-5 text-sm text-ink-700">
+          <strong>Tip:</strong> When contacting us about a payment, please
+          include your <strong>payment reference</strong> (shown on your receipt
+          and on the confirmation page) so we can help you faster.
+        </div>
+      </main>
+      <Footer />
+    </>
+  );
+}
+</file>
+
+<file path="src/app/privacy/page.tsx">
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+
+export const metadata = {
+  title: "Privacy Policy",
+  description: "How EduPass GH collects, uses and protects your information.",
+};
+
+export default function PrivacyPage() {
+  return (
+    <>
+      <Navbar />
+      <main className="mx-auto max-w-3xl px-5 py-14">
+        <h1 className="font-display text-3xl font-800 text-ink-900">
+          Privacy Policy
+        </h1>
+        <p className="mt-2 text-sm text-ink-500">Last updated: July 2026</p>
+        <p className="mt-4 leading-relaxed text-ink-700">
+          This policy explains what information EduPass GH (operated by CENTER
+          FORWARD VENTURES) collects and how we use it.
+        </p>
+
+        <h2 className="mt-8 font-display text-lg font-700 text-ink-900">
+          What we collect
+        </h2>
+        <ul className="mt-3 list-disc space-y-1.5 pl-5 text-ink-700">
+          <li>
+            Your email address — to send your voucher, receipts and support
+            replies.
+          </li>
+          <li>
+            Your phone number — only for university form orders, so we can reach
+            you on WhatsApp.
+          </li>
+          <li>Your payment reference and order details.</li>
+        </ul>
+
+        <div className="mt-6 rounded-xl border border-[#e6e5e3] bg-[#f7f9fc] p-5 text-sm text-ink-700">
+          We do <strong>not</strong> collect or store your card or mobile-money
+          details. All payments are handled directly by Paystack on their own
+          secure systems.
+        </div>
+
+        <h2 className="mt-8 font-display text-lg font-700 text-ink-900">
+          How we use your information
+        </h2>
+        <ul className="mt-3 list-disc space-y-1.5 pl-5 text-ink-700">
+          <li>To deliver your purchase and send receipts.</li>
+          <li>To provide customer support.</li>
+          <li>To keep records of orders for accounting and legal purposes.</li>
+        </ul>
+
+        <h2 className="mt-8 font-display text-lg font-700 text-ink-900">
+          Sharing
+        </h2>
+        <p className="mt-2 leading-relaxed text-ink-700">
+          We share only the information needed with Paystack to process your
+          payment. We never sell your personal data to anyone.
+        </p>
+
+        <h2 className="mt-8 font-display text-lg font-700 text-ink-900">
+          Data retention
+        </h2>
+        <p className="mt-2 leading-relaxed text-ink-700">
+          We keep order records for as long as necessary to provide support and
+          meet legal and accounting requirements.
+        </p>
+
+        <h2 className="mt-8 font-display text-lg font-700 text-ink-900">
+          Your rights
+        </h2>
+        <p className="mt-2 leading-relaxed text-ink-700">
+          You can ask us to access or delete your personal data at any time by
+          emailing{" "}
+          <a
+            href="mailto:support@edupassgh.com"
+            className="text-brand-600 hover:text-brand-700"
+          >
+            support@edupassgh.com
+          </a>
+          .
+        </p>
+      </main>
+      <Footer />
+    </>
+  );
+}
+</file>
+
+<file path="src/app/refund/page.tsx">
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+
+export const metadata = {
+  title: "Refund & Replacement Policy",
+  description:
+    "How refunds and replacements work for EduPass GH vouchers and university form orders.",
+};
+
+export default function RefundPage() {
+  return (
+    <>
+      <Navbar />
+      <main className="mx-auto max-w-3xl px-5 py-14">
+        <h1 className="font-display text-3xl font-800 text-ink-900">
+          Refund &amp; Replacement Policy
+        </h1>
+        <p className="mt-2 text-sm text-ink-500">Last updated: July 2026</p>
+        <p className="mt-4 leading-relaxed text-ink-700">
+          Because result-checker vouchers are digital PINs delivered instantly,
+          they generally cannot be refunded once revealed or sent — much like a
+          scratch card cannot be returned once it has been scratched. That said,
+          we stand behind every sale.
+        </p>
+
+        <h2 className="mt-8 font-display text-lg font-700 text-ink-900">
+          We will always help if:
+        </h2>
+        <ul className="mt-3 list-disc space-y-2 pl-5 text-ink-700">
+          <li>
+            <strong>You did not receive your voucher.</strong> If your payment
+            succeeded but no PIN appeared or arrived by email, contact us with
+            your reference and we will resend or replace it free of charge.
+          </li>
+          <li>
+            <strong>The code does not work or was already used.</strong> If a
+            PIN we sent is faulty, we will verify and send a working
+            replacement.
+          </li>
+          <li>
+            <strong>You were charged but got no order.</strong> If money left
+            your account but you received no confirmation, contact us — if we
+            cannot deliver, we will refund you in full.
+          </li>
+        </ul>
+
+        <h2 className="mt-8 font-display text-lg font-700 text-ink-900">
+          University admission forms
+        </h2>
+        <p className="mt-2 leading-relaxed text-ink-700">
+          Because these orders involve manual assistance, refund eligibility
+          depends on how far the process has gone. Please contact us as soon as
+          possible if there is a problem.
+        </p>
+
+        <h2 className="mt-8 font-display text-lg font-700 text-ink-900">
+          How to request help
+        </h2>
+        <p className="mt-2 leading-relaxed text-ink-700">
+          Email{" "}
+          <a
+            href="mailto:support@edupassgh.com"
+            className="text-brand-600 hover:text-brand-700"
+          >
+            support@edupassgh.com
+          </a>{" "}
+          or WhatsApp{" "}
+          <a
+            href="https://wa.me/233256767495"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-brand-600 hover:text-brand-700"
+          >
+            +233 25 676 7495
+          </a>{" "}
+          with your payment reference. We aim to resolve issues within 24 hours.
+        </p>
+      </main>
+      <Footer />
+    </>
+  );
+}
+</file>
+
+<file path="src/app/terms/page.tsx">
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+
+export const metadata = {
+  title: "Terms of Service",
+  description: "The terms that apply when you buy from EduPass GH.",
+};
+
+export default function TermsPage() {
+  return (
+    <>
+      <Navbar />
+      <main className="mx-auto max-w-3xl px-5 py-14">
+        <h1 className="font-display text-3xl font-800 text-ink-900">
+          Terms of Service
+        </h1>
+        <p className="mt-2 text-sm text-ink-500">Last updated: July 2026</p>
+        <p className="mt-4 leading-relaxed text-ink-700">
+          By using edupassgh.com and buying from EduPass GH (“we”, “us”),
+          operated by CENTER FORWARD VENTURES, you agree to the terms below. If
+          you do not agree, please do not use the site.
+        </p>
+
+        <h2 className="mt-8 font-display text-lg font-700 text-ink-900">
+          1. What we sell
+        </h2>
+        <p className="mt-2 leading-relaxed text-ink-700">
+          Result-checker vouchers (WASSCE, Private WASSCE and BECE) and assisted
+          university admission form purchases. All prices are shown in Ghana
+          Cedis (GHS) at checkout.
+        </p>
+
+        <h2 className="mt-6 font-display text-lg font-700 text-ink-900">
+          2. Payment
+        </h2>
+        <p className="mt-2 leading-relaxed text-ink-700">
+          Payments are processed securely by Paystack. Your order is confirmed
+          only after your payment has been verified.
+        </p>
+
+        <h2 className="mt-6 font-display text-lg font-700 text-ink-900">
+          3. Delivery
+        </h2>
+        <p className="mt-2 leading-relaxed text-ink-700">
+          Voucher PINs are delivered instantly on the confirmation page and by
+          email. University form assistance is delivered through WhatsApp after
+          payment.
+        </p>
+
+        <h2 className="mt-6 font-display text-lg font-700 text-ink-900">
+          4. Using your voucher
+        </h2>
+        <p className="mt-2 leading-relaxed text-ink-700">
+          Each PIN is single-use and triple use for one index number, and valid only for the service stated. Please
+          keep it private — we cannot be held responsible for PINs shared with
+          or used by other people.
+        </p>
+
+        <h2 className="mt-6 font-display text-lg font-700 text-ink-900">
+          5. Not affiliated with WAEC
+        </h2>
+        <p className="mt-2 leading-relaxed text-ink-700">
+          EduPass GH is an independent reseller and is not affiliated with, or
+          endorsed by, WAEC. Result availability and the checker service are
+          controlled by WAEC, not by us.
+        </p>
+
+        <h2 className="mt-6 font-display text-lg font-700 text-ink-900">
+          6. Your responsibilities
+        </h2>
+        <p className="mt-2 leading-relaxed text-ink-700">
+          You are responsible for giving us a correct email address and phone
+          number. We are not liable for delivery problems caused by incorrect
+          contact details.
+        </p>
+
+        <h2 className="mt-6 font-display text-lg font-700 text-ink-900">
+          7. Acceptable use
+        </h2>
+        <p className="mt-2 leading-relaxed text-ink-700">
+          You may not use this site for fraud or any activity that breaches WAEC
+          rules or Ghanaian law.
+        </p>
+
+        <h2 className="mt-6 font-display text-lg font-700 text-ink-900">
+          8. Limitation of liability
+        </h2>
+        <p className="mt-2 leading-relaxed text-ink-700">
+          To the fullest extent permitted by law, our total liability for any
+          order is limited to the amount you paid for that order.
+        </p>
+
+        <h2 className="mt-6 font-display text-lg font-700 text-ink-900">
+          9. Changes to these terms
+        </h2>
+        <p className="mt-2 leading-relaxed text-ink-700">
+          We may update these terms from time to time. The current version will
+          always be available on this page.
+        </p>
+
+        <h2 className="mt-6 font-display text-lg font-700 text-ink-900">
+          10. Contact
+        </h2>
+        <p className="mt-2 leading-relaxed text-ink-700">
+          Questions about these terms? Email{" "}
+          <a
+            href="mailto:support@edupassgh.com"
+            className="text-brand-600 hover:text-brand-700"
+          >
+            support@edupassgh.com
+          </a>
+          .
+        </p>
+      </main>
+      <Footer />
+    </>
+  );
+}
+</file>
+
+<file path="src/app/robot.ts">
+import type { MetadataRoute } from "next";
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://edupassgh.com";
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: {
+      userAgent: "*",
+      allow: "/",
+      disallow: ["/admin", "/api", "/success"],
+    },
+    sitemap: `${siteUrl}/sitemap.xml`,
+  };
+}
+</file>
+
+<file path="src/app/sitemap.ts">
+import type { MetadataRoute } from "next";
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://edupassgh.com";
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  return [
+    {
+      url: siteUrl,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 1,
+    },
+  ];
+}
+</file>
+
+<file path="preview/admin.html">
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>EduPass GH — Admin Preview</title>
+<style>
+:root{--brand50:#eef4ff;--brand600:#1746a2;--brand700:#123a86;--acc:#059669;--acc700:#047857;--accSoft:#e8f5ef;--ink900:#0f172a;--ink700:#334155;--ink500:#64748b;--bg:#f7f9fc;--border:#e6e5e3;--soft:#f0efed;--card:0 1px 3px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.06)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink900);line-height:1.5}
+h1,h2{font-family:'Trebuchet MS',Verdana,sans-serif;letter-spacing:-.02em}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+.svg{width:20px;height:20px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.btn-ghost{display:inline-flex;align-items:center;gap:8px;border-radius:12px;padding:12px 20px;font-size:14px;font-weight:600;min-height:44px;cursor:pointer;background:#fff;color:var(--ink900);border:1px solid var(--border)}
+.card{border-radius:12px;border:1px solid var(--border);background:#fff;box-shadow:var(--card)}
+header{position:sticky;top:0;z-index:40;border-bottom:1px solid var(--border);background:rgba(255,255,255,.92)}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:14px 20px}
+.logo{display:flex;align-items:center;gap:10px}
+.logo .badge{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:var(--brand600);color:#fff}
+.logo .name{font-family:'Trebuchet MS',sans-serif;font-size:18px;font-weight:800}
+.logo .name b{color:var(--brand600)}
+.head{display:flex;align-items:center;justify-content:space-between;padding-top:40px}
+.head p{margin-top:4px;font-size:14px;color:var(--ink500)}
+.kpis{margin-top:24px;display:grid;gap:16px;grid-template-columns:repeat(4,1fr)}
+.kpi{padding:20px}
+.kpi .ic{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:var(--brand50);color:var(--brand600)}
+.kpi .ic.acc{background:var(--accSoft);color:var(--acc700)}
+.kpi .v{margin-top:12px;font-family:'Trebuchet MS',sans-serif;font-size:24px;font-weight:800}
+.kpi .l{font-size:12px;color:var(--ink500)}
+h2.sec{margin-top:40px;font-family:'Trebuchet MS',sans-serif;font-size:18px;font-weight:700}
+.stock{margin-top:16px;display:grid;gap:16px;grid-template-columns:repeat(3,1fr)}
+.st{padding:20px}
+.st .row{display:flex;align-items:center;justify-content:space-between}
+.st .nm{font-size:14px;font-weight:600}
+.badge-low{border-radius:999px;background:#fce9e7;color:#b23b30;padding:2px 10px;font-size:12px;font-weight:600}
+.st .big{margin-top:12px;font-family:'Trebuchet MS',sans-serif;font-size:30px;font-weight:800}
+.st .sub{font-size:12px;color:var(--ink500)}
+table{width:100%;border-collapse:collapse;text-align:left;font-size:14px}
+thead tr{border-bottom:1px solid var(--border);font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink500)}
+th,td{padding:12px 16px}
+tbody tr{border-bottom:1px solid var(--soft)}
+.pill{border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600}
+.pill.ok{background:var(--accSoft);color:var(--acc700)}
+.pill.pend{background:#fbebde;color:#a55a20}
+.pill.fail{background:#fce9e7;color:#b23b30}
+.mono{font-family:Menlo,Consolas,monospace;font-size:12px;color:var(--ink700)}
+.tablewrap{margin-top:16px;overflow-x:auto}
+@media(max-width:860px){.kpis{grid-template-columns:1fr 1fr}.stock{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="wrap nav"><div class="logo"><span class="badge"><svg class="svg" viewBox="0 0 24 24"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1 2.7 2.5 6 2.5s6-1.5 6-2.5v-5"/></svg></span><span class="name">EduPass <b>GH</b></span></div></div></header>
+<main class="wrap">
+  <div class="head">
+    <div><h1 style="font-size:30px;font-weight:800">Dashboard</h1><p>Inventory and recent orders.</p></div>
+    <button class="btn-ghost">Sign out</button>
+  </div>
+  <div class="kpis">
+    <div class="card kpi"><span class="ic"><svg class="svg" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span><p class="v">GH₵2,150.00</p><p class="l">Revenue (fulfilled)</p></div>
+    <div class="card kpi"><span class="ic acc"><svg class="svg" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><p class="v">78</p><p class="l">Fulfilled orders</p></div>
+    <div class="card kpi"><span class="ic"><svg class="svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><p class="v">3</p><p class="l">Pending</p></div>
+    <div class="card kpi"><span class="ic"><svg class="svg" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></span><p class="v">124</p><p class="l">Codes in stock</p></div>
+  </div>
+  <div class="card" style="margin-top:24px;padding:24px">
+    <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px"><h2 style="font-family:'Trebuchet MS',sans-serif;font-size:18px;font-weight:700">Revenue over time</h2><div style="display:flex;align-items:center;gap:12px"><span style="font-size:12px;color:var(--ink500)">Fulfilled orders</span><div style="display:inline-flex;border:1px solid var(--border);border-radius:12px;padding:2px"><span style="border-radius:8px;background:var(--brand600);color:#fff;padding:6px 12px;font-size:12px;font-weight:600">Daily</span><span style="border-radius:8px;color:var(--ink700);padding:6px 12px;font-size:12px;font-weight:600">Weekly</span></div></div></div>
+    <p style="margin-top:4px;font-size:14px;color:var(--ink500)"><span style="font-family:'Trebuchet MS',sans-serif;font-size:20px;font-weight:800;color:var(--ink900)">GH₵2,150.00</span> total over 14 days</p>
+    <svg viewBox="0 0 720 180" style="margin-top:12px;width:100%" role="img" aria-label="Daily revenue bar chart">
+      <g fill="#1746a2">
+        <rect x="8"   y="120" width="45" height="36"  rx="3"/>
+        <rect x="59"  y="96"  width="45" height="60"  rx="3"/>
+        <rect x="110" y="140" width="45" height="16"  rx="3"/>
+        <rect x="161" y="72"  width="45" height="84"  rx="3"/>
+        <rect x="212" y="48"  width="45" height="108" rx="3"/>
+        <rect x="263" y="108" width="45" height="48"  rx="3"/>
+        <rect x="314" y="84"  width="45" height="72"  rx="3"/>
+        <rect x="365" y="60"  width="45" height="96"  rx="3"/>
+        <rect x="416" y="132" width="45" height="24"  rx="3"/>
+        <rect x="467" y="96"  width="45" height="60"  rx="3"/>
+        <rect x="518" y="36"  width="45" height="120" rx="3"/>
+        <rect x="569" y="72"  width="45" height="84"  rx="3"/>
+        <rect x="620" y="108" width="45" height="48"  rx="3"/>
+        <rect x="671" y="48"  width="41" height="108" rx="3"/>
+      </g>
+      <g fill="#64748b" font-size="10" text-anchor="middle">
+        <text x="30"  y="174">06-28</text>
+        <text x="183" y="174">07-01</text>
+        <text x="336" y="174">07-04</text>
+        <text x="489" y="174">07-07</text>
+        <text x="642" y="174">07-10</text>
+      </g>
+    </svg>
+  </div>
+  <h2 class="sec">Voucher stock</h2>
+  <div class="stock">
+    <div class="card st"><div class="row"><span class="nm">WASSCE Checker Voucher</span></div><p class="big">86</p><p class="sub">available · 42 sold</p></div>
+    <div class="card st"><div class="row"><span class="nm">Private WASSCE Voucher</span></div><p class="big">34</p><p class="sub">available · 18 sold</p></div>
+    <div class="card st"><div class="row"><span class="nm">BECE Checker Voucher</span><span class="badge-low">Low</span></div><p class="big">4</p><p class="sub">available · 18 sold</p></div>
+  </div>
+  <div style="margin-top:40px;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px">
+    <h2 style="font-family:'Trebuchet MS',sans-serif;font-size:18px;font-weight:700">Recent orders</h2>
+    <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px">
+      <div><label style="display:block;font-size:12px;font-weight:600;color:var(--ink500)">From</label><input type="date" value="2026-07-01" style="margin-top:4px;border-radius:12px;border:1px solid var(--border);padding:8px 12px;font-size:14px"></div>
+      <div><label style="display:block;font-size:12px;font-weight:600;color:var(--ink500)">To</label><input type="date" value="2026-07-11" style="margin-top:4px;border-radius:12px;border:1px solid var(--border);padding:8px 12px;font-size:14px"></div>
+      <div><label style="display:block;font-size:12px;font-weight:600;color:var(--ink500)">Product</label><select style="margin-top:4px;border-radius:12px;border:1px solid var(--border);background:#fff;padding:8px 12px;font-size:14px"><option>All products</option><option>WASSCE Checker Voucher</option><option>BECE Checker Voucher</option></select></div>
+      <div><label style="display:block;font-size:12px;font-weight:600;color:var(--ink500)">Status</label><select style="margin-top:4px;border-radius:12px;border:1px solid var(--border);background:#fff;padding:8px 12px;font-size:14px"><option>All statuses</option><option>FULFILLED</option><option>PENDING</option></select></div>
+      <button style="border-radius:12px;background:var(--brand600);color:#fff;border:0;padding:10px 18px;font-size:14px;font-weight:600;min-height:44px;cursor:pointer">Apply</button>
+      <button class="btn-ghost">Clear</button>
+      <button class="btn-ghost"><svg class="svg" style="width:16px;height:16px" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg> Export CSV</button>
+      <button class="btn-ghost"><svg class="svg" style="width:16px;height:16px" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg> Export summary</button>
+    </div>
+  </div>
+  <p style="margin-top:8px;font-size:12px;color:var(--ink500)">Showing 4 orders from 2026-07-01 to 2026-07-11.</p>
+  <div class="card tablewrap" style="margin-top:16px">
+    <table>
+      <thead><tr><th>Date</th><th>Product</th><th>Email</th><th>Amount</th><th>Status</th><th>Code</th></tr></thead>
+      <tbody>
+        <tr><td style="color:var(--ink500);white-space:nowrap">11 Jul, 15:32</td><td>WASSCE Checker Voucher</td><td style="color:var(--ink700)">ama@example.com</td><td style="font-weight:600;white-space:nowrap">GH₵25.00</td><td><span class="pill ok">FULFILLED</span></td><td class="mono">WAS-1002-BBBB-2222</td></tr>
+        <tr><td style="color:var(--ink500);white-space:nowrap">11 Jul, 15:20</td><td>University Admission Form</td><td style="color:var(--ink700)">kofi@example.com</td><td style="font-weight:600;white-space:nowrap">GH₵300.00</td><td><span class="pill ok">FULFILLED</span></td><td class="mono">—</td></tr>
+        <tr><td style="color:var(--ink500);white-space:nowrap">11 Jul, 15:07</td><td>BECE Checker Voucher</td><td style="color:var(--ink700)">selorm@example.com</td><td style="font-weight:600;white-space:nowrap">GH₵25.00</td><td><span class="pill pend">PENDING</span></td><td class="mono">—</td></tr>
+        <tr><td style="color:var(--ink500);white-space:nowrap">11 Jul, 14:51</td><td>WASSCE Checker Voucher</td><td style="color:var(--ink700)">yaa@example.com</td><td style="font-weight:600;white-space:nowrap">GH₵25.00</td><td><span class="pill fail">OUT_OF_STOCK</span></td><td class="mono">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div style="height:48px"></div>
+</main>
+</body>
+</html>
+</file>
+
+<file path="preview/index.html">
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>EduPass GH — Design Preview</title>
+<style>
+:root{
+  --brand50:#eef4ff;--brand100:#d9e6ff;--brand600:#1746a2;--brand700:#123a86;
+  --acc:#059669;--acc700:#047857;--accSoft:#e8f5ef;
+  --ink900:#0f172a;--ink700:#334155;--ink500:#64748b;
+  --bg:#f7f9fc;--border:#e6e5e3;--soft:#f0efed;
+  --card:0 1px 3px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink900);line-height:1.5}
+h1,h2,h3{font-family:'Trebuchet MS',Verdana,sans-serif;letter-spacing:-.02em}
+a{text-decoration:none;color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+.svg{width:20px;height:20px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;padding:12px 20px;font-size:14px;font-weight:600;min-height:44px;cursor:pointer;transition:all .2s;border:0}
+.btn-primary{background:var(--brand600);color:#fff;box-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 12px rgba(0,0,0,.04)}
+.btn-primary:hover{background:var(--brand700)}
+.btn-accent{background:var(--acc);color:#fff}
+.btn-accent:hover{background:var(--acc700)}
+.btn-ghost{background:#fff;color:var(--ink900);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--soft)}
+.card{border-radius:12px;border:1px solid var(--border);background:#fff;box-shadow:var(--card)}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;background:var(--brand50);padding:5px 12px;font-size:12px;font-weight:600;color:var(--brand700)}
+.secure{display:inline-flex;align-items:center;gap:6px;border-radius:999px;background:var(--accSoft);padding:5px 12px;font-size:12px;font-weight:600;color:var(--acc700)}
+.muted{color:var(--ink500)}
+.small{font-size:14px}
+
+/* nav */
+header{position:sticky;top:0;z-index:40;border-bottom:1px solid var(--border);background:rgba(255,255,255,.92);backdrop-filter:blur(8px)}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:14px 20px}
+.logo{display:flex;align-items:center;gap:10px}
+.logo .badge{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:var(--brand600);color:#fff}
+.logo .name{font-family:'Trebuchet MS',sans-serif;font-size:18px;font-weight:800}
+.logo .name b{color:var(--brand600)}
+.nav .links{display:flex;align-items:center;gap:16px}
+.nav .links a{font-size:14px;font-weight:600;color:var(--ink700)}
+.nav .links a:hover{color:var(--brand600)}
+
+/* hero */
+.hero{background:linear-gradient(to bottom,var(--brand50),var(--bg));padding:72px 0}
+.hero .inner{max-width:640px;margin:0 auto;text-align:center}
+.hero h1{font-size:48px;font-weight:800;line-height:1.1;margin-top:20px}
+.hero h1 span{color:var(--brand600)}
+.hero p{margin:16px auto 0;max-width:520px;color:var(--ink700)}
+.hero .cta{margin-top:28px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.stars{display:inline-flex;color:var(--acc)}
+.rating{margin-top:24px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;color:var(--ink500)}
+
+/* trust strip */
+.strip{margin-top:-24px}
+.grid3{display:grid;gap:16px;grid-template-columns:repeat(3,1fr)}
+.tcard{display:flex;gap:12px;align-items:flex-start;padding:20px}
+.tcard .ic{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:var(--brand50);color:var(--brand600);flex:none}
+.tcard p.t{font-weight:600}
+.tcard p.d{margin-top:2px;font-size:14px;color:var(--ink500)}
+
+/* section */
+section.pad{padding:64px 0}
+.section-head{max-width:560px;margin-bottom:32px}
+.section-head h2{font-size:30px;font-weight:800}
+.section-head p{margin-top:8px;color:var(--ink500)}
+
+/* products */
+.grid4{display:grid;gap:24px;grid-template-columns:repeat(4,1fr)}
+.pcard{display:flex;flex-direction:column;padding:24px}
+.pcard .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.pcard .ic{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:var(--brand50);color:var(--brand600)}
+.pcard .ic.form{background:var(--accSoft);color:var(--acc700)}
+.pcard h3{margin-top:16px;font-size:18px;font-weight:700}
+.pcard .desc{margin-top:6px;font-size:14px;color:var(--ink500)}
+.pcard ul{list-style:none;margin-top:16px;display:flex;flex-direction:column;gap:8px}
+.pcard li{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink700)}
+.pcard li .tick{display:grid;place-items:center;width:20px;height:20px;border-radius:999px;background:var(--accSoft);color:var(--acc700);flex:none}
+.pcard .foot{margin-top:24px;display:flex;align-items:flex-end;justify-content:space-between;border-top:1px solid var(--soft);padding-top:20px}
+.pcard .price{font-family:'Trebuchet MS',sans-serif;font-size:24px;font-weight:800}
+.pcard .price small{font-size:12px;font-weight:400;color:var(--ink500);margin-left:4px}
+
+/* checkout */
+.co-wrap{background:#fff}
+.co-grid{display:grid;gap:32px;grid-template-columns:1fr 360px;margin-top:32px}
+.opt{display:flex;align-items:center;justify-content:space-between;border-radius:12px;border:1px solid var(--border);background:#fff;padding:12px 16px;text-align:left;cursor:pointer}
+.opt.sel{border-color:var(--brand600);background:var(--brand50)}
+.opt .nm{font-size:14px;font-weight:600}
+.opt .pr{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700}
+.opt .selmark{display:grid;place-items:center;width:20px;height:20px;border-radius:999px;background:var(--brand600);color:#fff}
+label.lbl{display:block;font-size:14px;font-weight:600}
+input.field{margin-top:8px;width:100%;border-radius:12px;border:1px solid var(--border);padding:12px 16px;font-size:14px;outline:none}
+input.field:focus{border-color:var(--brand600);box-shadow:0 0 0 3px rgba(47,102,246,.25)}
+.summary li{list-style:none}
+
+/* footer */
+footer{border-top:1px solid var(--border);background:#fff}
+.fgrid{display:flex;gap:24px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.fmeta{display:flex;flex-direction:column;gap:8px;font-size:14px;color:var(--ink700)}
+.fmeta span{display:inline-flex;align-items:center;gap:8px}
+.copyright{margin-top:32px;border-top:1px solid var(--soft);padding-top:24px;font-size:12px;color:var(--ink500)}
+
+@media(max-width:860px){
+  .grid3,.grid4{grid-template-columns:1fr}
+  .co-grid{grid-template-columns:1fr}
+  .hero h1{font-size:34px}
+  .hero{padding:48px 0}
+  .nav .links a{display:none}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap nav">
+    <div class="logo">
+      <span class="badge"><svg class="svg" viewBox="0 0 24 24"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1 2.7 2.5 6 2.5s6-1.5 6-2.5v-5"/></svg></span>
+      <span class="name">EduPass <b>GH</b></span>
+    </div>
+    <div class="links">
+      <a href="#products">Vouchers</a>
+      <a href="#how">How it works</a>
+      <span class="secure"><svg class="svg" style="width:14px;height:14px" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Secure</span>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap inner">
+    <span class="chip"><svg class="svg" style="width:14px;height:14px" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg> Trusted by students across Ghana</span>
+    <h1>Exam vouchers, delivered <span>instantly.</span></h1>
+    <p>Buy WASSCE, Private WASSCE and BECE result checker vouchers online and get your PIN in seconds. Need a university admission form? We’ll guide you personally on WhatsApp.</p>
+    <div class="cta">
+      <a href="#products" class="btn btn-primary">Browse vouchers</a>
+      <a href="#how" class="btn btn-ghost">How it works</a>
+    </div>
+    <div class="rating">
+      <span class="stars" id="stars"></span>
+      <span>Rated 4.9/5 by 2,300+ buyers</span>
+    </div>
+  </div>
+</section>
+
+<div class="wrap strip">
+  <div class="grid3">
+    <div class="card tcard"><span class="ic"><svg class="svg" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></span><div><p class="t">Instant delivery</p><p class="d">Voucher PINs appear on-screen and hit your inbox seconds after payment.</p></div></div>
+    <div class="card tcard"><span class="ic"><svg class="svg" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span><div><p class="t">Verified payments</p><p class="d">Every transaction is confirmed server-side with Paystack before release.</p></div></div>
+    <div class="card tcard"><span class="ic"><svg class="svg" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span><div><p class="t">Secure by design</p><p class="d">We never see your card details. Payments are handled by Paystack.</p></div></div>
+  </div>
+</div>
+
+<section class="pad wrap" id="products">
+  <div class="section-head">
+    <h2>Choose your voucher</h2>
+    <p>All vouchers are single-use official result-checker PINs. Delivered instantly after payment.</p>
+  </div>
+  <div class="grid4" id="cards"></div>
+</section>
+
+<div class="co-wrap">
+  <section class="pad wrap" style="max-width:960px">
+    <div class="section-head"><h2>Checkout</h2></div>
+    <div class="co-grid">
+      <div class="card" style="padding:24px">
+        <label class="lbl">Product</label>
+        <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px">
+          <button class="opt sel"><span class="nm">WASSCE Checker Voucher</span><span class="pr">GH₵25.00 <span class="selmark"><svg class="svg" style="width:13px;height:13px" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span></span></button>
+          <button class="opt"><span class="nm">BECE Checker Voucher</span><span class="pr">GH₵25.00</span></button>
+          <button class="opt"><span class="nm">University Admission Form</span><span class="pr">GH₵300.00</span></button>
+        </div>
+        <div style="margin-top:24px">
+          <label class="lbl">Email address</label>
+          <input class="field" type="email" placeholder="you@example.com">
+          <p class="small muted" style="margin-top:6px">Your voucher / receipt will be sent here.</p>
+        </div>
+        <button class="btn btn-primary" style="margin-top:24px;width:100%">Pay GH₵25.00 securely <svg class="svg" style="width:16px;height:16px" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
+        <p class="small muted" style="margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px"><svg class="svg" style="width:14px;height:14px" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Secured by Paystack. We never store card details.</p>
+      </div>
+      <aside class="card" style="padding:24px;align-self:start">
+        <p style="font-family:'Trebuchet MS',sans-serif;font-size:16px;font-weight:700">Order summary</p>
+        <div style="margin-top:16px;display:flex;justify-content:space-between;font-size:14px"><span class="muted">WASSCE Checker Voucher</span><span style="font-weight:600">GH₵25.00</span></div>
+        <div style="margin-top:12px;display:flex;justify-content:space-between;border-top:1px solid var(--soft);padding-top:12px"><span style="font-weight:600">Total</span><span style="font-family:'Trebuchet MS',sans-serif;font-size:20px;font-weight:800">GH₵25.00</span></div>
+        <ul style="margin-top:20px;display:flex;flex-direction:column;gap:10px;font-size:14px;color:var(--ink700)">
+          <li class="summary" style="display:flex;align-items:center;gap:8px"><svg class="svg" style="width:16px;height:16px;color:var(--acc)" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg> Server-verified payment</li>
+          <li class="summary" style="display:flex;align-items:center;gap:8px"><svg class="svg" style="width:16px;height:16px;color:var(--acc)" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg> Instant voucher + email</li>
+        </ul>
+      </aside>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap" style="padding:40px 20px">
+    <div class="fgrid">
+      <div style="max-width:420px"><p style="font-family:'Trebuchet MS',sans-serif;font-size:16px;font-weight:700">EduPass GH</p><p class="small muted" style="margin-top:4px">Instant WASSCE, Private WASSCE and BECE result checker vouchers, plus assisted university admission form purchases.</p></div>
+      <div class="fmeta">
+        <span><svg class="svg" style="width:16px;height:16px" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg> support@edupassgh.com</span>
+        <span style="color:var(--acc700)"><svg class="svg" style="width:16px;height:16px" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Payments secured by Paystack</span>
+      </div>
+    </div>
+    <p class="copyright">© 2026 EduPass GH. Not affiliated with WAEC. Vouchers are official result-checker PINs resold for convenience.</p>
+  </div>
+</footer>
+
+<script>
+const star='<svg class="svg" style="width:16px;height:16px;fill:currentColor;stroke:none" viewBox="0 0 24 24"><path d="m12 2 3 6.5 7 .9-5 4.9 1.2 7L12 18l-6.4 3.3L6.8 14.3l-5-4.9 7-.9L12 2z"/></svg>';
+document.getElementById('stars').innerHTML=star.repeat(5);
+const bolt='<svg class="svg" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>';
+const wa='<svg class="svg" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg>';
+const tick='<svg class="svg" style="width:13px;height:13px" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>';
+const arrow='<svg class="svg" style="width:16px;height:16px" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>';
+const hl=['Instant delivery','Emailed automatically','Single-use PIN'];
+const hlF=['Personal WhatsApp support','Form sent manually after payment','Guided application help'];
+const products=[
+  {n:'WASSCE Checker Voucher',d:'Official WASSCE results checker voucher (school candidates). Delivered instantly after payment.',p:'GH₵25.00',b:'Most popular',f:false},
+  {n:'Private WASSCE Checker Voucher',d:'WASSCE results checker voucher for private / GBCE candidates. Delivered instantly after payment.',p:'GH₵25.00',b:'',f:false},
+  {n:'BECE Checker Voucher',d:'Official BECE results checker voucher. Delivered instantly after payment.',p:'GH₵25.00',b:'',f:false},
+  {n:'University Admission Form',d:"Purchase a university admission form. After payment you'll be connected on WhatsApp so we can send your form and guide you.",p:'GH₵300.00',b:'Assisted',f:true},
+];
+document.getElementById('cards').innerHTML=products.map(p=>`
+  <div class="card pcard">
+    <div class="top">
+      <span class="ic ${p.f?'form':''}">${p.f?wa:bolt}</span>
+      ${p.b?`<span class="chip">${p.b}</span>`:''}
+    </div>
+    <h3>${p.n}</h3>
+    <p class="desc">${p.d}</p>
+    <ul>${(p.f?hlF:hl).map(h=>`<li><span class="tick">${tick}</span>${h}</li>`).join('')}</ul>
+    <div class="foot">
+      <div class="price">${p.p}<small>one-time</small></div>
+      <a href="#" class="btn ${p.f?'btn-accent':'btn-primary'}">Buy now ${arrow}</a>
+    </div>
+  </div>`).join('');
+</script>
+</body>
+</html>
+</file>
+
+<file path="prisma/schema.postgres.prisma">
+// ---------------------------------------------------------------------------
+// PRODUCTION SCHEMA (PostgreSQL)
+//
+// To switch from SQLite to Postgres:
+//   1) Replace prisma/schema.prisma with this file's contents
+//      (or copy this over it).
+//   2) Set DATABASE_URL in .env to your Postgres connection string, e.g.
+//      DATABASE_URL="postgresql://user:pass@host:5432/edupass?schema=public"
+//   3) Run:  npx prisma migrate dev --name init
+//
+// Everything else in the app is identical \u2014 the atomic dispensing logic,
+// idempotency, and webhook flow all work the same on Postgres.
+// ---------------------------------------------------------------------------
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Voucher {
+  id          String        @id @default(cuid())
+  productType String
+  code        String        @unique
+  status      VoucherStatus @default(AVAILABLE)
+  soldTo      String?
+  reference   String?
+  soldAt      DateTime?
+  createdAt   DateTime      @default(now())
+
+  @@index([productType, status])
+  @@index([reference])
+}
+
+enum VoucherStatus {
+  AVAILABLE
+  RESERVED
+  SOLD
+}
+
+model Order {
+  id           String      @id @default(cuid())
+  reference    String      @unique
+  email        String
+  phone        String?
+  productType  String
+  category     String
+  amount       Int
+  currency     String      @default("GHS")
+  status       OrderStatus @default(PENDING)
+  voucherCode  String?
+  emailSent    Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([status])
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FULFILLED
+  FAILED
+  OUT_OF_STOCK
+}
+</file>
+
+<file path="prisma/schema.prisma">
+// Prisma schema for the exam voucher store.
+// Default: SQLite (zero-config). For production, switch provider to
+// "postgresql" or "mysql" and update DATABASE_URL.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+/// A single sellable voucher code that you upload in bulk.
+model Voucher {
+  id          String        @id @default(cuid())
+  productType String        // "WASSCE" | "WASSCE_PRIVATE" | "BECE"
+  code        String        @unique
+  status      VoucherStatus @default(AVAILABLE)
+  soldTo      String?       // buyer email once dispensed
+  reference   String?       // Paystack reference that claimed this code
+  soldAt      DateTime?
+  createdAt   DateTime      @default(now())
+
+  @@index([productType, status])
+  @@index([reference])
+}
+
+enum VoucherStatus {
+  AVAILABLE
+  RESERVED
+  SOLD
+}
+
+/// One purchase attempt, keyed by the Paystack reference (idempotency anchor).
+model Order {
+  id           String      @id @default(cuid())
+  reference    String      @unique
+  email        String
+  phone        String?
+  productType  String      // product id (see src/lib/products.ts)
+  category     String      // "VOUCHER" | "FORM"
+  amount       Int         // amount in kobo/pesewas (minor units)
+  currency     String      @default("GHS")
+  status       OrderStatus @default(PENDING)
+  voucherCode  String?     // filled for fulfilled voucher orders
+  emailSent    Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([status])
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FULFILLED
+  FAILED
+  OUT_OF_STOCK
+}
+</file>
+
+<file path="prisma/seed.ts">
+/**
+ * Optional seed: loads the sample voucher CSV so you can test end-to-end
+ * without a real code batch. Run: npx tsx prisma/seed.ts
+ */
+import { readFileSync } from "fs";
+import path from "path";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+async function main() {
+  const csv = readFileSync(path.join(process.cwd(), "data", "sample-vouchers.csv"), "utf8");
+  const rows = csv
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .filter((l) => l.split(",")[0].toLowerCase() !== "code")
+    .map((l) => {
+      const [code, type] = l.split(",").map((c) => c.trim());
+      return { code, productType: type, status: "AVAILABLE" as const };
+    });
+
+  const res = await prisma.voucher.createMany({ data: rows, skipDuplicates: true });
+  console.log(`Seeded ${res.count} vouchers.`);
+}
+
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(() => prisma.$disconnect());
+</file>
+
+<file path="scripts/stock-report.ts">
+/**
+ * Print current stock levels per voucher type.
+ * Usage: npm run vouchers:stock
+ */
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+async function main() {
+  const grouped = await prisma.voucher.groupBy({
+    by: ["productType", "status"],
+    _count: { _all: true },
+  });
+
+  const report: Record<string, Record<string, number>> = {};
+  for (const row of grouped) {
+    report[row.productType] ??= {};
+    report[row.productType][row.status] = row._count._all;
+  }
+
+  console.log("\nStock report\n============");
+  for (const [type, statuses] of Object.entries(report)) {
+    const available = statuses["AVAILABLE"] ?? 0;
+    const sold = statuses["SOLD"] ?? 0;
+    console.log(`${type.padEnd(16)} available: ${String(available).padStart(4)}   sold: ${String(sold).padStart(4)}`);
+  }
+  console.log("");
+}
+
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(() => prisma.$disconnect());
+</file>
+
+<file path="scripts/upload-vouchers.ts">
+/**
+ * Manual bulk upload of voucher codes  ->  the "manual upload" half of the
+ * "manual upload, automatic dispensing" system.
+ *
+ * Usage:
+ *   npm run vouchers:upload -- --type WASSCE --file ./data/sample-vouchers.csv
+ *   npm run vouchers:upload -- --type BECE --file ./codes.txt
+ *
+ * Accepts a .csv or .txt file with one code per line. If the CSV has a header
+ * row containing "code", it is skipped. Optionally a second column can specify
+ * the product type per row (overrides --type).
+ *
+ * Safe to re-run: duplicate codes are skipped (Voucher.code is unique).
+ */
+import { readFileSync } from "fs";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+const VALID_TYPES = ["WASSCE", "WASSCE_PRIVATE", "BECE"] as const;
+type VoucherType = (typeof VALID_TYPES)[number];
+
+function arg(name: string): string | undefined {
+  const i = process.argv.indexOf(`--${name}`);
+  return i >= 0 ? process.argv[i + 1] : undefined;
+}
+
+async function main() {
+  const defaultType = arg("type") as VoucherType | undefined;
+  const file = arg("file");
+
+  if (!file) throw new Error("Missing --file <path>");
+  if (defaultType && !VALID_TYPES.includes(defaultType)) {
+    throw new Error(`--type must be one of: ${VALID_TYPES.join(", ")}`);
+  }
+
+  const raw = readFileSync(file, "utf8");
+  const lines = raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+
+  const rows: { code: string; productType: VoucherType }[] = [];
+  for (const line of lines) {
+    const cols = line.split(",").map((c) => c.trim());
+    // Skip a header row like "code" or "code,type".
+    if (cols[0].toLowerCase() === "code") continue;
+    const code = cols[0];
+    const rowType = (cols[1] as VoucherType) || defaultType;
+    if (!code) continue;
+    if (!rowType || !VALID_TYPES.includes(rowType)) {
+      throw new Error(`No valid product type for code "${code}". Use --type or a second CSV column.`);
+    }
+    rows.push({ code, productType: rowType });
+  }
+
+  if (rows.length === 0) {
+    console.log("No codes found in file.");
+    return;
+  }
+
+  // createMany + skipDuplicates makes re-uploads safe and idempotent.
+  const result = await prisma.voucher.createMany({
+    data: rows.map((r) => ({ code: r.code, productType: r.productType, status: "AVAILABLE" as const })),
+    skipDuplicates: true,
+  });
+
+  console.log(`Parsed ${rows.length} codes. Inserted ${result.count} new (duplicates skipped).`);
+}
+
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(() => prisma.$disconnect());
+</file>
+
+<file path="src/app/admin/page.tsx">
+"use client";
+
+import { useEffect, useState } from "react";
+import { Navbar } from "@/components/Navbar";
+import { Bolt, Check, Clock, Download, Lock, ShieldCheck } from "@/components/icons";
+
+interface SeriesPoint { date: string; label: string; amount: number; amountLabel: string }
+
+interface Overview {
+  kpis: {
+    revenueLabel: string;
+    fulfilled: number;
+    pending: number;
+    failed: number;
+    totalAvailable: number;
+  };
+  stock: Array<{ productId: string; name: string; available: number; sold: number; low: boolean }>;
+  orders: Array<{
+    reference: string;
+    email: string;
+    productName: string;
+    category: string;
+    amountLabel: string;
+    status: string;
+    voucherCode: string | null;
+    createdAt: string;
+  }>;
+  series: SeriesPoint[];
+  bucket: "day" | "week";
+  filterOptions: { products: Array<{ id: string; name: string }>; statuses: string[] };
+  range: { from: string | null; to: string | null; product: string | null; status: string | null; count: number };
+}
+
+const statusStyles: Record<string, string> = {
+  FULFILLED: "bg-accent-500/10 text-accent-700",
+  PAID: "bg-brand-50 text-brand-700",
+  PENDING: "bg-[#fbebde] text-[#a55a20]",
+  FAILED: "bg-[#fce9e7] text-[#b23b30]",
+  OUT_OF_STOCK: "bg-[#fce9e7] text-[#b23b30]",
+};
+
+function query(params: Record<string, string>): string {
+  const p = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) if (v && v !== "all") p.set(k, v);
+  const s = p.toString();
+  return s ? `?${s}` : "";
+}
+
+export default function AdminPage() {
+  const [token, setToken] = useState("");
+  const [authed, setAuthed] = useState(false);
+  const [data, setData] = useState<Overview | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [exporting, setExporting] = useState("");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [product, setProduct] = useState("all");
+  const [status, setStatus] = useState("all");
+  const [bucket, setBucket] = useState<"day" | "week">("day");
+
+  const filters = { from, to, product, status, bucket };
+
+  useEffect(() => {
+    const saved = sessionStorage.getItem("adminToken");
+    if (saved) {
+      setToken(saved);
+      void load(saved);
+    }
+  }, []);
+
+  async function load(t: string, overrides: Partial<typeof filters> = {}) {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/overview${query({ ...filters, ...overrides })}`, {
+        headers: { Authorization: `Bearer ${t}` },
+      });
+      if (res.status === 401) throw new Error("Invalid admin token.");
+      if (!res.ok) throw new Error("Could not load dashboard.");
+      const json = (await res.json()) as Overview;
+      setData(json);
+      setAuthed(true);
+      sessionStorage.setItem("adminToken", t);
+    } catch (e: any) {
+      setError(e.message);
+      setAuthed(false);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function download(path: string, filename: string, kind: string) {
+    setExporting(kind);
+    setError(null);
+    try {
+      const res = await fetch(`${path}${query(filters)}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Export failed.");
+      const blob = await res.blob();
+      const href = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = href;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(href);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setExporting("");
+    }
+  }
+
+  const stamp = () => new Date().toISOString().slice(0, 10);
+
+  function setBucketAndLoad(next: "day" | "week") {
+    setBucket(next);
+    void load(token, { bucket: next });
+  }
+
+  function clearFilters() {
+    setFrom("");
+    setTo("");
+    setProduct("all");
+    setStatus("all");
+    void load(token, { from: "", to: "", product: "all", status: "all" });
+  }
+
+  function logout() {
+    sessionStorage.removeItem("adminToken");
+    setAuthed(false);
+    setData(null);
+    setToken("");
+  }
+
+  const hasFilters = Boolean(from || to || product !== "all" || status !== "all");
+
+  return (
+    <>
+      <Navbar />
+      <main className="mx-auto max-w-6xl px-5 py-10">
+        {!authed ? (
+          <div className="mx-auto max-w-sm card p-8">
+            <span className="grid h-12 w-12 place-items-center rounded-xl bg-brand-50 text-brand-600">
+              <Lock />
+            </span>
+            <h1 className="mt-4 font-display text-xl font-extrabold text-ink-900">Admin dashboard</h1>
+            <p className="mt-1 text-sm text-ink-500">Enter your admin token to continue.</p>
+            <input
+              type="password"
+              value={token}
+              onChange={(e) => setToken(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && load(token)}
+              placeholder="ADMIN_API_TOKEN"
+              className="mt-5 w-full rounded-xl border border-[#e6e5e3] px-4 py-3 text-sm outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-500/30"
+            />
+            {error && <p className="mt-3 rounded-lg bg-[#fce9e7] px-3 py-2 text-sm text-[#b23b30]">{error}</p>}
+            <button onClick={() => load(token)} disabled={loading || !token} className="btn-primary mt-5 w-full disabled:opacity-60">
+              {loading ? "Checking\u2026" : "Sign in"}
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h1 className="font-display text-2xl font-extrabold text-ink-900 sm:text-3xl">Dashboard</h1>
+                <p className="mt-1 text-sm text-ink-500">Inventory, revenue and recent orders.</p>
+              </div>
+              <button onClick={logout} className="btn-ghost">Sign out</button>
+            </div>
+
+            {/* KPIs */}
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <Kpi icon={<ShieldCheck />} label="Revenue (fulfilled)" value={data!.kpis.revenueLabel} />
+              <Kpi icon={<Check />} label="Fulfilled orders" value={String(data!.kpis.fulfilled)} tone="accent" />
+              <Kpi icon={<Clock />} label="Pending" value={String(data!.kpis.pending)} />
+              <Kpi icon={<Bolt />} label="Codes in stock" value={String(data!.kpis.totalAvailable)} />
+            </div>
+
+            {/* Revenue chart */}
+            <div className="mt-6 card p-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 className="font-display text-lg font-bold text-ink-900">Revenue over time</h2>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-ink-500">Fulfilled orders</span>
+                  <div className="inline-flex rounded-xl border border-[#e6e5e3] p-0.5">
+                    {(["day", "week"] as const).map((b) => (
+                      <button
+                        key={b}
+                        onClick={() => setBucketAndLoad(b)}
+                        className={
+                          "rounded-lg px-3 py-1.5 text-xs font-semibold capitalize transition-colors " +
+                          (bucket === b ? "bg-brand-600 text-white" : "text-ink-700 hover:bg-[#f0efed]")
+                        }
+                      >
+                        {b === "day" ? "Daily" : "Weekly"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <RevenueChart series={data!.series} bucket={data!.bucket} />
+            </div>
+
+            {/* Stock */}
+            <h2 className="mt-10 font-display text-lg font-bold text-ink-900">Voucher stock</h2>
+            <div className="mt-4 grid gap-4 sm:grid-cols-3">
+              {data!.stock.map((s) => (
+                <div key={s.productId} className="card p-5">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-ink-900">{s.name}</p>
+                    {s.low && <span className="rounded-full bg-[#fce9e7] px-2.5 py-0.5 text-xs font-semibold text-[#b23b30]">Low</span>}
+                  </div>
+                  <p className="mt-3 font-display text-3xl font-extrabold text-ink-900">{s.available}</p>
+                  <p className="text-xs text-ink-500">available · {s.sold} sold</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Orders + filters */}
+            <div className="mt-10 flex flex-wrap items-end justify-between gap-4">
+              <h2 className="font-display text-lg font-bold text-ink-900">Recent orders</h2>
+              <div className="flex flex-wrap items-end gap-3">
+                <Field label="From">
+                  <input type="date" value={from} max={to || undefined} onChange={(e) => setFrom(e.target.value)}
+                    className="mt-1 rounded-xl border border-[#e6e5e3] px-3 py-2 text-sm outline-none focus:border-brand-600" />
+                </Field>
+                <Field label="To">
+                  <input type="date" value={to} min={from || undefined} onChange={(e) => setTo(e.target.value)}
+                    className="mt-1 rounded-xl border border-[#e6e5e3] px-3 py-2 text-sm outline-none focus:border-brand-600" />
+                </Field>
+                <Field label="Product">
+                  <select value={product} onChange={(e) => setProduct(e.target.value)}
+                    className="mt-1 rounded-xl border border-[#e6e5e3] bg-white px-3 py-2 text-sm outline-none focus:border-brand-600">
+                    <option value="all">All products</option>
+                    {data!.filterOptions.products.map((p) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                </Field>
+                <Field label="Status">
+                  <select value={status} onChange={(e) => setStatus(e.target.value)}
+                    className="mt-1 rounded-xl border border-[#e6e5e3] bg-white px-3 py-2 text-sm outline-none focus:border-brand-600">
+                    <option value="all">All statuses</option>
+                    {data!.filterOptions.statuses.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </Field>
+                <button onClick={() => load(token)} disabled={loading} className="btn-primary disabled:opacity-60">
+                  {loading ? "Loading\u2026" : "Apply"}
+                </button>
+                {hasFilters && <button onClick={clearFilters} className="btn-ghost">Clear</button>}
+                <button onClick={() => download("/api/admin/export", `edupass-orders-${stamp()}.csv`, "orders")} disabled={exporting !== ""} className="btn-ghost disabled:opacity-60">
+                  <Download className="h-4 w-4" /> {exporting === "orders" ? "Exporting\u2026" : "Export CSV"}
+                </button>
+                <button onClick={() => download("/api/admin/summary", `edupass-revenue-summary-${stamp()}.csv`, "summary")} disabled={exporting !== ""} className="btn-ghost disabled:opacity-60">
+                  <Download className="h-4 w-4" /> {exporting === "summary" ? "Exporting\u2026" : "Export summary"}
+                </button>
+              </div>
+            </div>
+            <p className="mt-2 text-xs text-ink-500">
+              Showing {data!.range.count} order{data!.range.count === 1 ? "" : "s"}
+              {hasFilters ? " for the selected filters" : " (most recent)"}.
+            </p>
+
+            <div className="mt-4 card overflow-x-auto">
+              <table className="w-full min-w-[720px] text-left text-sm">
+                <thead>
+                  <tr className="border-b border-[#e6e5e3] text-xs uppercase tracking-wide text-ink-500">
+                    <th className="px-4 py-3 font-semibold">Date</th>
+                    <th className="px-4 py-3 font-semibold">Product</th>
+                    <th className="px-4 py-3 font-semibold">Email</th>
+                    <th className="px-4 py-3 font-semibold">Amount</th>
+                    <th className="px-4 py-3 font-semibold">Status</th>
+                    <th className="px-4 py-3 font-semibold">Code</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data!.orders.map((o) => (
+                    <tr key={o.reference} className="border-b border-[#f0efed] last:border-0">
+                      <td className="whitespace-nowrap px-4 py-3 text-ink-500">{new Date(o.createdAt).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-ink-900">{o.productName}</td>
+                      <td className="px-4 py-3 text-ink-700">{o.email}</td>
+                      <td className="whitespace-nowrap px-4 py-3 font-semibold text-ink-900">{o.amountLabel}</td>
+                      <td className="px-4 py-3">
+                        <span className={"rounded-full px-2.5 py-0.5 text-xs font-semibold " + (statusStyles[o.status] ?? "bg-[#f0efed] text-ink-700")}>
+                          {o.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 font-mono text-xs text-ink-700">{o.voucherCode ?? "\u2014"}</td>
+                    </tr>
+                  ))}
+                  {data!.orders.length === 0 && (
+                    <tr><td colSpan={6} className="px-4 py-8 text-center text-ink-500">No orders match these filters.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+      </main>
+    </>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="block text-xs font-semibold text-ink-500">{label}</label>
+      {children}
+    </div>
+  );
+}
+
+function Kpi({ icon, label, value, tone }: { icon: React.ReactNode; label: string; value: string; tone?: "accent" }) {
+  return (
+    <div className="card p-5">
+      <span className={"grid h-10 w-10 place-items-center rounded-xl " + (tone === "accent" ? "bg-accent-500/10 text-accent-700" : "bg-brand-50 text-brand-600")}>
+        {icon}
+      </span>
+      <p className="mt-3 font-display text-2xl font-extrabold text-ink-900">{value}</p>
+      <p className="text-xs text-ink-500">{label}</p>
+    </div>
+  );
+}
+
+/** Lightweight dependency-free SVG bar chart of revenue per bucket (minor units). */
+function RevenueChart({ series, bucket }: { series: SeriesPoint[]; bucket: "day" | "week" }) {
+  if (!series.length) {
+    return <p className="mt-6 text-sm text-ink-500">No revenue data yet.</p>;
+  }
+  const max = Math.max(...series.map((s) => s.amount), 1);
+  const total = series.reduce((a, s) => a + s.amount, 0);
+  const W = 720;
+  const H = 180;
+  const pad = { top: 12, right: 8, bottom: 24, left: 8 };
+  const innerW = W - pad.left - pad.right;
+  const innerH = H - pad.top - pad.bottom;
+  const gap = 6;
+  const barW = Math.max(2, innerW / series.length - gap);
+  const tickEvery = Math.ceil(series.length / 7);
+  const unit = bucket === "week" ? "week" : "day";
+
+  return (
+    <div>
+      <p className="mt-1 text-sm text-ink-500">
+        <span className="font-display text-xl font-extrabold text-ink-900">
+          {new Intl.NumberFormat("en-GH", { style: "currency", currency: "GHS" }).format(total / 100)}
+        </span>{" "}
+        total over {series.length} {unit}{series.length === 1 ? "" : "s"}
+      </p>
+      <svg viewBox={`0 0 ${W} ${H}`} className="mt-3 w-full" role="img" aria-label={`Revenue per ${unit} bar chart`}>
+        {series.map((s, i) => {
+          const h = (s.amount / max) * innerH;
+          const x = pad.left + i * (barW + gap);
+          const y = pad.top + innerH - h;
+          return (
+            <g key={s.date}>
+              <rect x={x} y={y} width={barW} height={Math.max(h, s.amount > 0 ? 2 : 0)} rx={3} fill="#1746a2">
+                <title>{`${s.label}: ${s.amountLabel}`}</title>
+              </rect>
+              {i % tickEvery === 0 && (
+                <text x={x + barW / 2} y={H - 6} textAnchor="middle" fontSize={10} fill="#64748b">
+                  {s.label.replace("wk ", "")}
+                </text>
+              )}
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+</file>
+
+<file path="src/app/api/admin/overview/route.ts">
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+import { getStockReport } from "@/lib/inventory";
+import { PRODUCTS, formatGHS, getProduct } from "@/lib/products";
+import { buildOrderWhere, buildRevenueWhere, bucketAxis, keyForDate } from "@/lib/adminFilters";
+
+export const dynamic = "force-dynamic";
+
+function authorized(req: Request): boolean {
+  const token = process.env.ADMIN_API_TOKEN;
+  if (!token) return false;
+  const header = req.headers.get("authorization");
+  return header === `Bearer ${token}`;
+}
+
+/**
+ * GET /api/admin/overview?from=&to=&product=&status=&bucket=   (admin only)
+ * KPIs + per-type stock are all-time; the orders table + revenue chart respect
+ * the active filters (date range, product, status, day/week bucket).
+ * Auth: Authorization: Bearer <ADMIN_API_TOKEN>
+ */
+export async function GET(req: Request) {
+  if (!authorized(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const url = new URL(req.url);
+  const where = buildOrderWhere(url);
+  const revenueWhere = buildRevenueWhere(url);
+  const axis = bucketAxis(url);
+
+  const [stock, orders, revenueAgg, statusCounts, chartOrders] =
+    await Promise.all([
+      getStockReport(),
+      prisma.order.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        take: 100,
+        select: {
+          reference: true,
+          email: true,
+          productType: true,
+          category: true,
+          amount: true,
+          currency: true,
+          status: true,
+          voucherCode: true,
+          createdAt: true,
+        },
+      }),
+      prisma.order.aggregate({ _sum: { amount: true }, where: revenueWhere }),
+      prisma.order.groupBy({ by: ["status"], _count: { _all: true }, where }),
+      prisma.order.findMany({
+        where: { ...revenueWhere, createdAt: { gte: axis.gte, lte: axis.lte } },
+        select: { amount: true, createdAt: true },
+      }),
+    ]);
+
+  const stockList = PRODUCTS.filter((p) => p.category === "VOUCHER").map((p) => {
+    const s = stock[p.voucherType!] ?? { available: 0, sold: 0, reserved: 0 };
+    return {
+      productId: p.id,
+      name: p.name,
+      voucherType: p.voucherType,
+      available: s.available,
+      sold: s.sold,
+      low: s.available <= 5,
+    };
+  });
+
+  const orderList = orders.map((o) => ({
+    ...o,
+    productName: getProduct(o.productType)?.name ?? o.productType,
+    amountLabel: formatGHS(o.amount),
+    createdAt: o.createdAt.toISOString(),
+  }));
+
+  const counts: Record<string, number> = {};
+  for (const c of statusCounts) counts[c.status] = c._count._all;
+
+  // Bucket fulfilled revenue into the day/week axis (minor units).
+  const buckets: Record<string, number> = Object.fromEntries(
+    axis.keys.map((k) => [k, 0]),
+  );
+  for (const o of chartOrders) {
+    const key = keyForDate(o.createdAt, axis.mode);
+    if (key in buckets) buckets[key] += o.amount;
+  }
+  const series = axis.keys.map((k) => ({
+    date: k,
+    label: axis.labels[k],
+    amount: buckets[k],
+    amountLabel: formatGHS(buckets[k]),
+  }));
+
+  return NextResponse.json({
+    kpis: {
+      revenueLabel: formatGHS(revenueAgg._sum.amount ?? 0),
+      fulfilled: counts["FULFILLED"] ?? 0,
+      pending: counts["PENDING"] ?? 0,
+      failed: (counts["FAILED"] ?? 0) + (counts["OUT_OF_STOCK"] ?? 0),
+      totalAvailable: stockList.reduce((a, s) => a + s.available, 0),
+    },
+    stock: stockList,
+    orders: orderList,
+    series,
+    bucket: axis.mode,
+    filterOptions: {
+      products: PRODUCTS.map((p) => ({ id: p.id, name: p.name })),
+      statuses: ["PENDING", "PAID", "FULFILLED", "FAILED", "OUT_OF_STOCK"],
+    },
+    range: {
+      from: url.searchParams.get("from"),
+      to: url.searchParams.get("to"),
+      product: url.searchParams.get("product"),
+      status: url.searchParams.get("status"),
+      count: orderList.length,
+    },
+  });
+}
+</file>
+
+<file path="src/app/api/admin/summary/route.ts">
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+import { PRODUCTS, getProduct } from "@/lib/products";
+import {
+  buildOrderWhere,
+  buildRevenueWhere,
+  bucketAxis,
+  keyForDate,
+} from "@/lib/adminFilters";
+
+export const dynamic = "force-dynamic";
+
+function authorized(req: Request): boolean {
+  const token = process.env.ADMIN_API_TOKEN;
+  if (!token) return false;
+  return req.headers.get("authorization") === `Bearer ${token}`;
+}
+
+function cell(value: unknown): string {
+  const s = value == null ? "" : String(value);
+  return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+const STATUSES = ["PENDING", "PAID", "FULFILLED", "FAILED", "OUT_OF_STOCK"] as const;
+
+/**
+ * GET /api/admin/summary?from=&to=&product=&status=&bucket=   (admin only)
+ * A single CSV with three summary sections: revenue by product, orders by
+ * status, and revenue by day/week. Revenue always reflects FULFILLED orders
+ * (date + product scoped); status counts reflect the full filter set.
+ * Auth: Authorization: Bearer <ADMIN_API_TOKEN>
+ */
+export async function GET(req: Request) {
+  if (!authorized(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const url = new URL(req.url);
+  const where = buildOrderWhere(url);
+  const revenueWhere = buildRevenueWhere(url);
+  const axis = bucketAxis(url);
+
+  const [byProduct, byStatus, revenueOrders] = await Promise.all([
+    prisma.order.groupBy({
+      by: ["productType"],
+      _count: { _all: true },
+      _sum: { amount: true },
+      where: revenueWhere,
+    }),
+    prisma.order.groupBy({
+      by: ["status"],
+      _count: { _all: true },
+      where,
+    }),
+    prisma.order.findMany({
+      where: { ...revenueWhere, createdAt: { gte: axis.gte, lte: axis.lte } },
+      select: { amount: true, createdAt: true },
+    }),
+  ]);
+
+  const money = (minor: number) => (minor / 100).toFixed(2);
+
+  // --- Section 1: revenue by product (fulfilled) ---
+  const prodMap = new Map<string, { count: number; amount: number }>();
+  for (const r of byProduct) {
+    prodMap.set(r.productType, {
+      count: r._count._all,
+      amount: r._sum.amount ?? 0,
+    });
+  }
+  const productRows = PRODUCTS.map((p) => {
+    const v = prodMap.get(p.id) ?? { count: 0, amount: 0 };
+    return [p.name, v.count, money(v.amount)];
+  });
+  const productTotal = [...prodMap.values()].reduce((a, v) => a + v.amount, 0);
+  const productCountTotal = [...prodMap.values()].reduce((a, v) => a + v.count, 0);
+
+  // --- Section 2: orders by status (full filter set) ---
+  const statusMap: Record<string, number> = {};
+  for (const r of byStatus) statusMap[r.status] = r._count._all;
+  const statusRows = STATUSES.map((s) => [s, statusMap[s] ?? 0]);
+  const statusTotal = STATUSES.reduce((a, s) => a + (statusMap[s] ?? 0), 0);
+
+  // --- Section 3: revenue by day/week ---
+  const buckets: Record<string, { count: number; amount: number }> =
+    Object.fromEntries(axis.keys.map((k) => [k, { count: 0, amount: 0 }]));
+  for (const o of revenueOrders) {
+    const key = keyForDate(o.createdAt, axis.mode);
+    if (key in buckets) {
+      buckets[key].count += 1;
+      buckets[key].amount += o.amount;
+    }
+  }
+  const periodRows = axis.keys.map((k) => [
+    k,
+    buckets[k].count,
+    money(buckets[k].amount),
+  ]);
+  const periodTotal = axis.keys.reduce((a, k) => a + buckets[k].amount, 0);
+
+  const filters = {
+    from: url.searchParams.get("from") ?? "",
+    to: url.searchParams.get("to") ?? "",
+    product: getProduct(url.searchParams.get("product") ?? "")?.name ?? "All",
+    status: url.searchParams.get("status") ?? "All",
+    bucket: axis.mode,
+  };
+
+  const lines: (string | number)[][] = [
+    ["EduPass GH \u2014 Revenue summary"],
+    ["Generated (UTC)", new Date().toISOString()],
+    [
+      "Filters",
+      `from=${filters.from || "start"}; to=${filters.to || "today"}; product=${filters.product}; status=${filters.status}; bucket=${filters.bucket}`,
+    ],
+    [],
+    ["Revenue by product (fulfilled)"],
+    ["Product", "Fulfilled orders", "Revenue (GHS)"],
+    ...productRows,
+    ["Total", productCountTotal, money(productTotal)],
+    [],
+    ["Orders by status"],
+    ["Status", "Orders"],
+    ...statusRows,
+    ["Total", statusTotal],
+    [],
+    [`Revenue by ${axis.mode}`],
+    [axis.mode === "week" ? "Week starting" : "Day", "Fulfilled orders", "Revenue (GHS)"],
+    ...periodRows,
+    ["Total", "", money(periodTotal)],
+  ];
+
+  const body =
+    "\uFEFF" + lines.map((r) => r.map(cell).join(",")).join("\r\n");
+  const stamp = new Date().toISOString().slice(0, 10);
+
+  return new NextResponse(body, {
+    headers: {
+      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Disposition": `attachment; filename="edupass-revenue-summary-${stamp}.csv"`,
+      "Cache-Control": "no-store",
+    },
+  });
+}
+</file>
+
+<file path="src/app/api/paystack/initialize/route.ts">
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { prisma } from "@/lib/db";
+import { getProduct } from "@/lib/products";
+import { initializeTransaction, newReference } from "@/lib/paystack";
+import { countAvailable } from "@/lib/inventory";
+
+export const dynamic = "force-dynamic";
+
+const bodySchema = z.object({
+  productId: z.string(),
+  email: z.string().email(),
+  phone: z.string().min(6).optional(),
+});
+
+/**
+ * POST /api/paystack/initialize
+ * Creates an Order (PENDING) and returns the Paystack hosted-checkout URL.
+ * The amount is taken from our server-side catalog, NEVER from the client.
+ */
+export async function POST(req: Request) {
+  let parsed;
+  try {
+    parsed = bodySchema.parse(await req.json());
+  } catch {
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  }
+
+  const product = getProduct(parsed.productId);
+  if (!product) {
+    return NextResponse.json({ error: "Unknown product" }, { status: 404 });
+  }
+
+  // Pre-flight stock check for voucher products so we don't take money we
+  // cannot fulfil. (Final claim still happens atomically after payment.)
+  if (product.category === "VOUCHER") {
+    const available = await countAvailable(product.voucherType!);
+    if (available <= 0) {
+      return NextResponse.json({ error: "This voucher is currently out of stock." }, { status: 409 });
+    }
+  }
+
+  const reference = newReference();
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const callbackUrl = `${siteUrl}/success?reference=${reference}`;
+
+  await prisma.order.create({
+    data: {
+      reference,
+      email: parsed.email,
+      phone: parsed.phone,
+      productType: product.id,
+      category: product.category,
+      amount: product.amount,
+      currency: product.currency,
+      status: "PENDING",
+    },
+  });
+
+  try {
+    const init = await initializeTransaction({
+      email: parsed.email,
+      amount: product.amount,
+      currency: product.currency,
+      reference,
+      callbackUrl,
+      metadata: { productId: product.id, category: product.category },
+    });
+    return NextResponse.json({ authorizationUrl: init.authorization_url, reference });
+  } catch (err) {
+    console.error("[initialize] paystack error:", err);
+    await prisma.order.update({ where: { reference }, data: { status: "FAILED" } });
+    return NextResponse.json({ error: "Could not start payment. Try again." }, { status: 502 });
+  }
+}
+</file>
+
+<file path="src/app/api/paystack/verify/route.ts">
+import { NextResponse } from "next/server";
+import { fulfilByReference } from "@/lib/fulfilment";
+import { buildWhatsAppLink } from "@/lib/whatsapp";
+
+export const dynamic = "force-dynamic";
+
+/**
+ * GET /api/paystack/verify?reference=...
+ * Called by the /success page after the browser redirect. This gives the buyer
+ * instant feedback even before the webhook lands. It reuses the exact same
+ * idempotent fulfilment routine, so it can never double-dispense.
+ */
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const reference = searchParams.get("reference");
+  if (!reference) {
+    return NextResponse.json({ error: "Missing reference" }, { status: 400 });
+  }
+
+  try {
+    const result = await fulfilByReference(reference);
+
+    // For fulfilled FORM orders, hand back a ready-to-use WhatsApp deep link.
+    let whatsappUrl: string | undefined;
+    if (result.ok && result.category === "FORM" && result.email) {
+      whatsappUrl = buildWhatsAppLink({
+        reference,
+        productName: result.productName ?? "University Admission Form",
+        email: result.email,
+      });
+    }
+
+    return NextResponse.json({ ...result, whatsappUrl });
+  } catch (err) {
+    console.error("[verify] error:", err);
+    return NextResponse.json({ error: "Verification failed" }, { status: 500 });
+  }
+}
+</file>
+
+<file path="src/app/api/paystack/webhook/route.ts">
+import { NextResponse } from "next/server";
+import { isValidWebhookSignature } from "@/lib/paystack";
+import { fulfilByReference } from "@/lib/fulfilment";
+
+// Webhooks must read the RAW body to validate the signature, so disable any
+// body parsing/caching.
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
+/**
+ * POST /api/paystack/webhook
+ * Paystack calls this on payment events. This is the PRIMARY, reliable
+ * fulfilment path (the browser redirect is only a secondary trigger).
+ *
+ * Security:
+ *   1. Verify the x-paystack-signature HMAC over the raw body.
+ *   2. Only act on charge.success.
+ *   3. Re-verify the transaction inside fulfilByReference before releasing.
+ */
+export async function POST(req: Request) {
+  const rawBody = await req.text();
+  const signature = req.headers.get("x-paystack-signature");
+
+  if (!isValidWebhookSignature(rawBody, signature)) {
+    // Do not reveal details. Just reject.
+    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+  }
+
+  let event: any;
+  try {
+    event = JSON.parse(rawBody);
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  // Acknowledge non-charge events fast so Paystack doesn't retry them.
+  if (event?.event !== "charge.success") {
+    return NextResponse.json({ received: true, ignored: event?.event ?? "unknown" });
+  }
+
+  const reference: string | undefined = event?.data?.reference;
+  if (!reference) {
+    return NextResponse.json({ error: "Missing reference" }, { status: 400 });
+  }
+
+  try {
+    const result = await fulfilByReference(reference);
+    // Always return 200 for handled events so Paystack stops retrying, even for
+    // OUT_OF_STOCK (which we resolve manually) \u2014 the state is recorded.
+    return NextResponse.json({ received: true, status: result.status });
+  } catch (err) {
+    console.error("[webhook] fulfilment error:", err);
+    // 500 -> Paystack will retry later, which is what we want for transient errors.
+    return NextResponse.json({ error: "Fulfilment error" }, { status: 500 });
+  }
+}
+</file>
+
+<file path="src/app/api/stock/route.ts">
+import { NextResponse } from "next/server";
+import { getStockReport } from "@/lib/inventory";
+
+export const dynamic = "force-dynamic";
+
+/**
+ * GET /api/stock  (admin only)
+ * Protected by a bearer token so only you can see inventory levels.
+ * Send header:  Authorization: Bearer <ADMIN_API_TOKEN>
+ */
+export async function GET(req: Request) {
+  const token = process.env.ADMIN_API_TOKEN;
+  const auth = req.headers.get("authorization");
+  if (!token || auth !== `Bearer ${token}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const report = await getStockReport();
+  return NextResponse.json({ stock: report });
+}
+</file>
+
+<file path="src/app/checkout/page.tsx">
+"use client";
+
+import { Suspense, useState } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import { PRODUCTS, formatGHS, getProduct } from "@/lib/products";
+import { ArrowRight, Check, Lock, ShieldCheck } from "@/components/icons";
+
+function CheckoutInner() {
+  const params = useSearchParams();
+  const initialId = params.get("product") ?? PRODUCTS[0].id;
+  const [productId, setProductId] = useState(initialId);
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const product = getProduct(productId) ?? PRODUCTS[0];
+  const isForm = product.category === "FORM";
+  const emailValid = /.+@.+\..+/.test(email);
+
+  async function pay() {
+    setError(null);
+    if (!emailValid) return setError("Please enter a valid email address.");
+    if (isForm && phone.trim().length < 6)
+      return setError("Please enter your phone number for WhatsApp.");
+    setLoading(true);
+    try {
+      const res = await fetch("/api/paystack/initialize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId, email, phone: phone || undefined }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not start payment.");
+      window.location.href = data.authorizationUrl; // hosted Paystack checkout
+    } catch (e: any) {
+      setError(e.message);
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="mx-auto max-w-5xl px-5 py-10">
+      <Link
+        href="/"
+        className="text-sm font-semibold text-brand-600 hover:text-brand-700"
+      >
+        ← Back to store
+      </Link>
+      <h1 className="mt-3 font-display text-2xl font-800 text-ink-900 sm:text-3xl">
+        Checkout
+      </h1>
+
+      <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_380px]">
+        {/* Form */}
+        <div className="card p-6">
+          <label className="block text-sm font-600 text-ink-900">Product</label>
+          <div className="mt-2 grid gap-2">
+            {PRODUCTS.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setProductId(p.id)}
+                className={
+                  "flex items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors duration-200 cursor-pointer " +
+                  (p.id === productId
+                    ? "border-brand-600 bg-brand-50"
+                    : "border-[#e6e5e3] bg-white hover:bg-[#f7f9fc]")
+                }
+              >
+                <span className="text-sm font-600 text-ink-900">{p.name}</span>
+                <span className="flex items-center gap-2 text-sm font-700 text-ink-900">
+                  {formatGHS(p.amount)}
+                  {p.id === productId && (
+                    <span className="grid h-5 w-5 place-items-center rounded-full bg-brand-600 text-white">
+                      <Check width={13} height={13} />
+                    </span>
+                  )}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-6">
+            <label
+              htmlFor="email"
+              className="block text-sm font-600 text-ink-900"
+            >
+              Email address
+            </label>
+            <input
+              id="email"
+              type="email"
+              inputMode="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="mt-2 w-full rounded-xl border border-[#e6e5e3] px-4 py-3 text-sm outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-500/30"
+            />
+            <p className="mt-1.5 text-xs text-ink-500">
+              Your voucher / receipt will be sent here.
+            </p>
+          </div>
+
+          {isForm && (
+            <div className="mt-4">
+              <label
+                htmlFor="phone"
+                className="block text-sm font-600 text-ink-900"
+              >
+                WhatsApp phone number
+              </label>
+              <input
+                id="phone"
+                type="tel"
+                inputMode="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="024 123 4567"
+                className="mt-2 w-full rounded-xl border border-[#e6e5e3] px-4 py-3 text-sm outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-500/30"
+              />
+              <p className="mt-1.5 text-xs text-ink-500">
+                We’ll connect with you here to send your form.
+              </p>
+            </div>
+          )}
+
+          {error && (
+            <p className="mt-4 rounded-lg bg-[#fce9e7] px-4 py-2.5 text-sm text-[#b23b30]">
+              {error}
+            </p>
+          )}
+
+          <button
+            onClick={pay}
+            disabled={loading}
+            className="btn-primary mt-6 w-full disabled:opacity-60"
+          >
+            {loading ? (
+              "Redirecting to Paystack…"
+            ) : (
+              <>
+                Pay {formatGHS(product.amount)} securely{" "}
+                <ArrowRight width={16} height={16} />
+              </>
+            )}
+          </button>
+          <p className="mt-3 flex items-center justify-center gap-2 text-xs text-ink-500">
+            <Lock width={14} height={14} /> Secured by Paystack. We never store
+            card details.
+          </p>
+        </div>
+
+        {/* Summary */}
+        <aside className="h-fit card p-6">
+          <p className="font-display text-base font-700 text-ink-900">
+            Order summary
+          </p>
+          <div className="mt-4 flex items-center justify-between text-sm">
+            <span className="text-ink-500">{product.name}</span>
+            <span className="font-600 text-ink-900">
+              {formatGHS(product.amount)}
+            </span>
+          </div>
+          <div className="mt-3 flex items-center justify-between border-t border-[#f0efed] pt-3">
+            <span className="font-600 text-ink-900">Total</span>
+            <span className="font-display text-xl font-800 text-ink-900">
+              {formatGHS(product.amount)}
+            </span>
+          </div>
+          <ul className="mt-5 space-y-2.5 text-sm text-ink-700">
+            <li className="flex items-center gap-2">
+              <ShieldCheck width={16} height={16} className="text-accent-600" />{" "}
+              Server-verified payment
+            </li>
+            <li className="flex items-center gap-2">
+              <Check width={16} height={16} className="text-accent-600" />
+              {isForm
+                ? "WhatsApp support after payment"
+                : "Instant voucher + email"}
+            </li>
+          </ul>
+        </aside>
+      </div>
+    </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <>
+      <Navbar />
+      <Suspense
+        fallback={
+          <div className="mx-auto max-w-5xl px-5 py-16 text-ink-500">
+            Loading…
+          </div>
+        }
+      >
+        <CheckoutInner />
+      </Suspense>
+      <Footer />
+    </>
+  );
+}
+</file>
+
+<file path="src/app/success/page.tsx">
+"use client";
+
+import { Suspense, useEffect, useState } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import { Check, MessageCircle, ShieldCheck } from "@/components/icons";
+
+interface VerifyResult {
+  ok: boolean;
+  category: "VOUCHER" | "FORM" | null;
+  status: string;
+  voucherCode?: string;
+  productName?: string;
+  reference: string;
+  whatsappUrl?: string;
+  message?: string;
+}
+
+function SuccessInner() {
+  const params = useSearchParams();
+  const reference = params.get("reference");
+  const [state, setState] = useState<"loading" | "done" | "error">("loading");
+  const [result, setResult] = useState<VerifyResult | null>(null);
+
+  useEffect(() => {
+    if (!reference) {
+      setState("error");
+      return;
+    }
+    fetch(`/api/paystack/verify?reference=${encodeURIComponent(reference)}`)
+      .then((r) => r.json())
+      .then((data: VerifyResult) => {
+        setResult(data);
+        setState("done");
+      })
+      .catch(() => setState("error"));
+  }, [reference]);
+
+  return (
+    <div className="mx-auto max-w-xl px-5 py-16">
+      {state === "loading" && (
+        <div className="card p-8 text-center">
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-brand-100 border-t-brand-600" />
+          <p className="mt-4 font-600 text-ink-900">Verifying your payment\u2026</p>
+          <p className="mt-1 text-sm text-ink-500">Confirming securely with Paystack. This takes a moment.</p>
+        </div>
+      )}
+
+      {state === "done" && result?.ok && result.category === "VOUCHER" && (
+        <div className="card p-8 text-center">
+          <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-accent-500/10 text-accent-700">
+            <Check width={28} height={28} />
+          </span>
+          <h1 className="mt-4 font-display text-2xl font-800 text-ink-900">Payment successful</h1>
+          <p className="mt-1 text-sm text-ink-500">Here is your {result.productName}. We\u2019ve also emailed it to you.</p>
+          <div className="mt-6 rounded-xl border border-dashed border-brand-600 bg-brand-50 p-6">
+            <p className="text-xs font-700 uppercase tracking-wider text-brand-700">Voucher code / PIN</p>
+            <p className="mt-2 select-all font-display text-3xl font-800 tracking-wider text-ink-900">{result.voucherCode}</p>
+          </div>
+          <p className="mt-4 text-xs text-ink-500">Reference: {result.reference}</p>
+          <Link href="/" className="btn-ghost mt-6">Back to store</Link>
+        </div>
+      )}
+
+      {state === "done" && result?.ok && result.category === "FORM" && (
+        <div className="card p-8 text-center">
+          <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-accent-500/10 text-accent-700">
+            <Check width={28} height={28} />
+          </span>
+          <h1 className="mt-4 font-display text-2xl font-800 text-ink-900">Payment received</h1>
+          <p className="mt-1 text-sm text-ink-500">
+            Tap below to message us on WhatsApp. Your reference is pre-filled so we can send your form right away.
+          </p>
+          <a href={result.whatsappUrl} target="_blank" rel="noopener noreferrer" className="btn-accent mt-6 w-full">
+            <MessageCircle width={18} height={18} /> Continue on WhatsApp
+          </a>
+          <p className="mt-4 text-xs text-ink-500">Reference: {result.reference}</p>
+        </div>
+      )}
+
+      {state === "done" && result && !result.ok && (
+        <div className="card p-8 text-center">
+          <h1 className="font-display text-xl font-800 text-ink-900">We couldn\u2019t confirm this yet</h1>
+          <p className="mt-2 text-sm text-ink-500">
+            {result.status === "OUT_OF_STOCK"
+              ? "Your payment was received but stock just ran out. We\u2019ll sort this out and email you \u2014 please contact support with your reference."
+              : "If you were charged, don\u2019t worry \u2014 our system will finish automatically. Keep your reference safe."}
+          </p>
+          {result.reference && <p className="mt-4 text-xs text-ink-500">Reference: {result.reference}</p>}
+          <Link href="/" className="btn-ghost mt-6">Back to store</Link>
+        </div>
+      )}
+
+      {state === "error" && (
+        <div className="card p-8 text-center">
+          <h1 className="font-display text-xl font-800 text-ink-900">Missing payment reference</h1>
+          <p className="mt-2 text-sm text-ink-500">We couldn\u2019t find a transaction to verify.</p>
+          <Link href="/" className="btn-ghost mt-6">Back to store</Link>
+        </div>
+      )}
+
+      <p className="mt-6 flex items-center justify-center gap-2 text-xs text-ink-500">
+        <ShieldCheck width={14} height={14} /> Verified server-side with Paystack
+      </p>
+    </div>
+  );
+}
+
+export default function SuccessPage() {
+  return (
+    <>
+      <Navbar />
+      <Suspense fallback={<div className="mx-auto max-w-xl px-5 py-16 text-center text-ink-500">Loading\u2026</div>}>
+        <SuccessInner />
+      </Suspense>
+      <Footer />
+    </>
+  );
+}
+</file>
+
+<file path="src/app/globals.css">
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-[#f7f9fc] text-ink-900 font-sans antialiased;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+    min-height: 44px;
+  }
+  .btn-primary {
+    @apply btn bg-brand-600 text-white shadow-soft hover:bg-brand-700 focus-visible:ring-brand-500;
+  }
+  .btn-accent {
+    @apply btn bg-accent-600 text-white shadow-soft hover:bg-accent-700 focus-visible:ring-accent-500;
+  }
+  .btn-ghost {
+    @apply btn border border-[#e6e5e3] bg-white text-ink-900 hover:bg-[#f0efed] focus-visible:ring-brand-500;
+  }
+  .card {
+    @apply rounded-xl border border-[#e6e5e3] bg-white shadow-card;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+
+/* --- Hero motion graphic (graduation / 8 A1s celebration) --- */
+.hero-decor {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.hero-glow {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(64px);
+}
+.hero-glow-1 {
+  width: 340px; height: 340px;
+  background: #8eb6ff; opacity: .45;
+  top: -90px; left: -60px;
+  animation: heroDrift 15s ease-in-out infinite;
+}
+.hero-glow-2 {
+  width: 300px; height: 300px;
+  background: #10b981; opacity: .3;
+  bottom: -100px; right: -50px;
+  animation: heroDrift 19s ease-in-out infinite reverse;
+}
+@keyframes heroDrift {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(28px, 22px); }
+}
+.hero-cap {
+  position: absolute;
+  color: #1746a2;
+  opacity: .22;
+  animation: heroFloat 9s ease-in-out infinite;
+}
+@keyframes heroFloat {
+  0% { transform: translateY(10px) rotate(-8deg); }
+  50% { transform: translateY(-14px) rotate(8deg); }
+  100% { transform: translateY(10px) rotate(-8deg); }
+}
+.grade-badge {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 42px; height: 42px;
+  border-radius: 9999px;
+  background: #ffffff;
+  color: #1746a2;
+  font-family: Sora, Inter, system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  border: 2px solid #1746a2;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, .12);
+  opacity: .9;
+  animation: gradePop 6s ease-in-out infinite;
+}
+@keyframes gradePop {
+  0%, 100% { transform: scale(.92) translateY(0); opacity: .8; }
+  50% { transform: scale(1.06) translateY(-10px); opacity: 1; }
+}
+.confetti {
+  position: absolute;
+  top: -16px;
+  width: 9px; height: 14px;
+  border-radius: 2px;
+  opacity: .8;
+  animation-name: confettiFall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@keyframes confettiFall {
+  0% { transform: translateY(-20px) rotate(0deg); opacity: .9; }
+  100% { transform: translateY(560px) rotate(560deg); opacity: 0; }
+}
+.results-slip {
+  animation: slipIn .9s ease-out both, slipFloat 6s ease-in-out 1s infinite;
+}
+@keyframes slipIn {
+  0% { transform: translateY(26px) rotate(-3deg); opacity: 0; }
+  100% { transform: translateY(0) rotate(-3deg); opacity: 1; }
+}
+@keyframes slipFloat {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-9px) rotate(-2deg); }
+}
+</file>
+
+<file path="src/app/layout.tsx">
+import type { Metadata } from "next";
+import "./globals.css";
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://edupassgh.com";
+
+export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
+  title: {
+    default:
+      "EduPass GH \u2014 Instant WASSCE, BECE & Private WASSCE Checker Vouchers",
+    template: "%s | EduPass GH",
+  },
+  description:
+    "Buy WASSCE, Private WASSCE and BECE result checker vouchers instantly in Ghana, and get help with university admission forms. Secure Paystack payment, voucher delivered to your email in seconds.",
+  keywords: [
+    "WASSCE checker",
+    "BECE checker",
+    "WASSCE results checker Ghana",
+    "buy WASSCE checker online",
+    "Private WASSCE checker",
+    "results checker voucher",
+    "university admission forms Ghana",
+    "EduPass GH",
+  ],
+  applicationName: "EduPass GH",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: siteUrl,
+    siteName: "EduPass GH",
+    title: "EduPass GH \u2014 Instant Exam Checker Vouchers & University Forms",
+    description:
+      "Buy WASSCE, Private WASSCE and BECE result checker vouchers instantly in Ghana. Delivered to your email in seconds.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "EduPass GH \u2014 Instant Exam Checker Vouchers",
+    description:
+      "Buy WASSCE, Private WASSCE and BECE checker vouchers instantly in Ghana. Secure Paystack payment.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin=""
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body>{children}</body>
+    </html>
+  );
+}
+</file>
+
+<file path="src/app/page.tsx">
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import { ProductCard } from "@/components/ProductCard";
+import { PRODUCTS } from "@/lib/products";
+import { Bolt, Clock, GraduationCap, Lock, Mail, ShieldCheck, Star } from "@/components/icons";
+
+const trust = [
+  { icon: Bolt, title: "Instant delivery", body: "Voucher PINs appear on-screen and hit your inbox seconds after payment." },
+  { icon: ShieldCheck, title: "Verified payments", body: "Every transaction is confirmed server-side with Paystack before release." },
+  { icon: Lock, title: "Secure by design", body: "We never see your card details. Payments are handled by Paystack." },
+];
+
+const steps = [
+  { n: "1", title: "Choose a product", body: "Pick your WASSCE, Private WASSCE or BECE voucher — or a university form." },
+  { n: "2", title: "Pay with Paystack", body: "Card, Mobile Money or bank. Fast, secure and fully verified." },
+  { n: "3", title: "Get it instantly", body: "Vouchers show immediately + emailed. Forms connect you on WhatsApp." },
+];
+
+const reviews = [
+  { name: "Ama D.", role: "WASSCE candidate", text: "Paid with MoMo and got my checker PIN in seconds. So easy!" },
+  { name: "Kofi B.", role: "Parent", text: "Bought a BECE voucher for my daughter late at night — instant and legit." },
+  { name: "Selorm K.", role: "Applicant", text: "The university form WhatsApp help was quick and personal. Recommended." },
+];
+
+export default function HomePage() {
+  return (
+    <>
+      <Navbar />
+
+      {/* Hero */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-brand-50 to-[#f7f9fc]" />
+
+        {/* Branded motion graphic: graduation & 8 A1s celebration (no photos) */}
+        <div aria-hidden="true" className="hero-decor -z-10">
+          <span className="hero-glow hero-glow-1" />
+          <span className="hero-glow hero-glow-2" />
+          {[
+            { left: "7%", top: "18%", delay: "0s", size: 30 },
+            { left: "20%", top: "62%", delay: "1.2s", size: 22 },
+            { left: "82%", top: "22%", delay: "0.6s", size: 34 },
+            { left: "90%", top: "60%", delay: "1.8s", size: 24 },
+            { left: "48%", top: "12%", delay: "2.4s", size: 20 },
+          ].map((c, i) => (
+            <span key={`cap-${i}`} className="hero-cap" style={{ left: c.left, top: c.top, animationDelay: c.delay }}>
+              <GraduationCap width={c.size} height={c.size} />
+            </span>
+          ))}
+          {[0, 1, 2].map((i) => (
+            <span
+              key={`grade-${i}`}
+              className="grade-badge"
+              style={{ left: `${16 + i * 30}%`, top: `${32 + (i % 2) * 32}%`, animationDelay: `${i * 1.3}s` }}
+            >
+              A1
+            </span>
+          ))}
+          {[
+            "#1746a2", "#10b981", "#598eff", "#059669", "#2f66f6", "#8eb6ff",
+            "#1746a2", "#10b981", "#598eff", "#059669", "#2f66f6", "#8eb6ff",
+          ].map((color, i) => (
+            <span
+              key={`confetti-${i}`}
+              className="confetti"
+              style={{
+                left: `${(i * 8 + 4) % 100}%`,
+                background: color,
+                animationDuration: `${5.5 + (i % 4)}s`,
+                animationDelay: `${(i % 6) * 0.5}s`,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Floating Opoku Ware results slip — 8 A1s */}
+        <div
+          aria-hidden="true"
+          className="results-slip absolute right-8 top-12 z-0 hidden w-56 rounded-xl border border-brand-100 bg-white p-4 shadow-card lg:block"
+        >
+          <p className="text-[10px] font-bold uppercase tracking-wider text-brand-700">Opoku Ware School</p>
+          <p className="font-display text-sm font-extrabold text-ink-900">WASSCE Results</p>
+          <ul className="mt-2 space-y-1 text-xs text-ink-700">
+            <li className="flex justify-between"><span>Core Mathematics</span><span className="font-extrabold text-accent-600">A1</span></li>
+            <li className="flex justify-between"><span>English Language</span><span className="font-extrabold text-accent-600">A1</span></li>
+            <li className="flex justify-between"><span>Integrated Science</span><span className="font-extrabold text-accent-600">A1</span></li>
+            <li className="flex justify-between"><span>Elective Maths</span><span className="font-extrabold text-accent-600">A1</span></li>
+          </ul>
+          <p className="mt-2 rounded-lg bg-accent-500/10 px-2 py-1 text-center text-xs font-extrabold text-accent-700">8 A1s · Distinction</p>
+        </div>
+
+        <div className="relative z-10 mx-auto max-w-6xl px-5 py-16 sm:py-20">
+          <div className="mx-auto max-w-2xl text-center">
+            <span className="chip mx-auto"><ShieldCheck width={14} height={14} /> Trusted by students across Ghana</span>
+            <h1 className="mt-5 font-display text-4xl font-800 leading-tight tracking-tight text-ink-900 sm:text-5xl">
+              Exam vouchers, delivered <span className="text-brand-600">instantly.</span>
+            </h1>
+            <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-ink-700">
+              Buy WASSCE, Private WASSCE and BECE result checker vouchers online and get your PIN
+              in seconds. Need a university admission form? We'll guide you personally on WhatsApp.
+            </p>
+            <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <a href="#products" className="btn-primary w-full sm:w-auto">Browse vouchers</a>
+              <a href="#how" className="btn-ghost w-full sm:w-auto">How it works</a>
+            </div>
+            <div className="mt-6 flex items-center justify-center gap-1.5 text-sm text-ink-500">
+              <span className="flex text-accent-600">
+                {Array.from({ length: 5 }).map((_, i) => (<Star key={i} width={16} height={16} />))}
+              </span>
+              <span className="ml-1">Rated 4.9/5 by 2,300+ buyers</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust strip */}
+      <section className="mx-auto -mt-6 max-w-6xl px-5">
+        <div className="grid gap-4 sm:grid-cols-3">
+          {trust.map((t) => (
+            <div key={t.title} className="card flex items-start gap-3 p-5">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-600">
+                <t.icon />
+              </span>
+              <div>
+                <p className="font-600 text-ink-900">{t.title}</p>
+                <p className="mt-0.5 text-sm text-ink-500">{t.body}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Promotional flyer */}
+      <section className="mx-auto max-w-6xl px-5 pt-14">
+        <div className="grid items-center gap-6 rounded-xl border border-brand-100 bg-white p-6 shadow-card md:grid-cols-[300px_1fr] md:p-8">
+          <img
+            src="/flyer.png"
+            alt="CENTER FORWARD VENTURES — WAEC results vouchers: BECE, WASSCE and NOVDEC at GHS 25 each"
+            className="mx-auto w-full max-w-[300px] rounded-lg border border-[#e6e5e3]"
+          />
+          <div>
+            <span className="chip">Current offer</span>
+            <h2 className="mt-3 font-display text-2xl font-800 text-ink-900 sm:text-3xl">WAEC result vouchers — GHS 25 each</h2>
+            <p className="mt-2 text-ink-700">
+              BECE, WASSCE and NOVDEC result checker vouchers, delivered instantly to your email after payment. A trusted service by CENTER FORWARD VENTURES.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <a href="#products" className="btn-primary">Buy a voucher</a>
+              <a href="https://wa.me/233256767495" target="_blank" rel="noopener noreferrer" className="btn-ghost">Chat on WhatsApp</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Products */}
+      <section id="products" className="mx-auto max-w-6xl px-5 py-16">
+        <div className="mb-8 max-w-xl">
+          <h2 className="font-display text-2xl font-800 text-ink-900 sm:text-3xl">Choose your voucher</h2>
+          <p className="mt-2 text-ink-500">All vouchers are single-use official result-checker PINs. Delivered instantly after payment.</p>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {PRODUCTS.map((p) => (<ProductCard key={p.id} product={p} />))}
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section id="how" className="bg-white">
+        <div className="mx-auto max-w-6xl px-5 py-16">
+          <h2 className="font-display text-2xl font-800 text-ink-900 sm:text-3xl">How it works</h2>
+          <div className="mt-8 grid gap-6 md:grid-cols-3">
+            {steps.map((s) => (
+              <div key={s.n} className="relative rounded-xl border border-[#e6e5e3] p-6">
+                <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-600 font-display text-sm font-700 text-white">{s.n}</span>
+                <p className="mt-4 font-600 text-ink-900">{s.title}</p>
+                <p className="mt-1 text-sm text-ink-500">{s.body}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-ink-500">
+            <span className="inline-flex items-center gap-2"><Clock width={16} height={16} /> Available 24/7</span>
+            <span className="inline-flex items-center gap-2"><Mail width={16} height={16} /> Emailed receipt + code</span>
+            <span className="inline-flex items-center gap-2"><Lock width={16} height={16} /> Paystack secured</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Reviews */}
+      <section className="mx-auto max-w-6xl px-5 py-16">
+        <h2 className="font-display text-2xl font-800 text-ink-900 sm:text-3xl">What buyers say</h2>
+        <div className="mt-8 grid gap-6 md:grid-cols-3">
+          {reviews.map((r) => (
+            <figure key={r.name} className="card p-6">
+              <div className="flex text-accent-600">
+                {Array.from({ length: 5 }).map((_, i) => (<Star key={i} width={15} height={15} />))}
+              </div>
+              <blockquote className="mt-3 text-sm leading-relaxed text-ink-700">“{r.text}”</blockquote>
+              <figcaption className="mt-4 text-sm">
+                <span className="font-600 text-ink-900">{r.name}</span>
+                <span className="text-ink-500"> · {r.role}</span>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      </section>
+
+      <Footer />
+    </>
+  );
+}
+</file>
+
+<file path="src/components/Footer.tsx">
+import Link from "next/link";
+import { Lock, Mail, MessageCircle } from "./icons";
+
+export function Footer() {
+  return (
+    <footer className="border-t border-[#e6e5e3] bg-white">
+      <div className="mx-auto max-w-6xl px-5 py-10">
+        <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
+          {/* Company */}
+          <div className="max-w-md">
+            <div className="flex items-center gap-3">
+              <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-xl bg-ink-900">
+                <img
+                  src="/logo-fc.png"
+                  alt="CENTER FORWARD VENTURES logo"
+                  className="h-12 w-12 object-cover"
+                />
+              </span>
+              <div>
+                <p className="font-display text-base font-800 tracking-tight text-ink-900">
+                  CENTER FORWARD VENTURES
+                </p>
+                <p className="text-xs text-ink-500">Operator of EduPass GH</p>
+              </div>
+            </div>
+            <p className="mt-4 text-sm text-ink-500">
+              Instant WASSCE, Private WASSCE and BECE result checker vouchers,
+              plus assisted university admission form purchases.
+            </p>
+          </div>
+
+          {/* Contact */}
+          <div className="flex flex-col gap-2 text-sm text-ink-700">
+            <a
+              href="mailto:support@edupassgh.com"
+              className="inline-flex items-center gap-2 hover:text-brand-600"
+            >
+              <Mail width={16} height={16} /> support@edupassgh.com
+            </a>
+            <a
+              href="https://wa.me/233256767495"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 hover:text-brand-600"
+            >
+              <MessageCircle width={16} height={16} /> +233 25 676 7495
+            </a>
+            <span className="inline-flex items-center gap-2 text-accent-700">
+              <Lock width={16} height={16} /> Payments secured by Paystack
+            </span>
+          </div>
+        </div>
+
+        {/* Developer credit */}
+        <div className="mt-8 flex items-center gap-3 border-t border-[#f0efed] pt-6">
+          <img
+            src="/fred-oppong.png"
+            alt="Fred Oppong"
+            className="h-11 w-11 rounded-full object-cover"
+          />
+          <div>
+            <p className="text-sm font-600 text-ink-900">Fred Oppong</p>
+            <p className="text-xs text-ink-500">Developer</p>
+          </div>
+        </div>
+
+        <nav className="mt-8 flex flex-wrap gap-x-5 gap-y-2 border-t border-[#f0efed] pt-6 text-xs font-600 text-ink-700">
+          <Link href="/about" className="hover:text-brand-600">
+            About
+          </Link>
+          <Link href="/contact" className="hover:text-brand-600">
+            Contact
+          </Link>
+          <Link href="/terms" className="hover:text-brand-600">
+            Terms
+          </Link>
+          <Link href="/privacy" className="hover:text-brand-600">
+            Privacy
+          </Link>
+          <Link href="/refund" className="hover:text-brand-600">
+            Refunds
+          </Link>
+        </nav>
+
+        <p className="mt-6 text-xs text-ink-500">
+          © {new Date().getFullYear()} CENTER FORWARD VENTURES · EduPass GH. Not
+          affiliated with WAEC. Vouchers are official result-checker PINs resold
+          for convenience.
+        </p>
+      </div>
+    </footer>
+  );
+}
+</file>
+
+<file path="src/components/icons.tsx">
+// Lightweight inline SVG icons (Lucide-style). No emoji icons anywhere.
+import * as React from "react";
+
+type P = React.SVGProps<SVGSVGElement>;
+const base = (props: P) => ({
+  width: 20,
+  height: 20,
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 2,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+  ...props,
+});
+
+export const ShieldCheck = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    <path d="m9 12 2 2 4-4" />
+  </svg>
+);
+export const Bolt = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
+  </svg>
+);
+export const Mail = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="2" y="4" width="20" height="16" rx="2" />
+    <path d="m22 7-10 6L2 7" />
+  </svg>
+);
+export const MessageCircle = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z" />
+  </svg>
+);
+export const Lock = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="3" y="11" width="18" height="11" rx="2" />
+    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+  </svg>
+);
+export const Check = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M20 6 9 17l-5-5" />
+  </svg>
+);
+export const Star = (p: P) => (
+  <svg {...base({ fill: "currentColor", stroke: "none", ...p })}>
+    <path d="m12 2 3 6.5 7 .9-5 4.9 1.2 7L12 18l-6.4 3.3L6.8 14.3l-5-4.9 7-.9L12 2z" />
+  </svg>
+);
+export const ArrowRight = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M5 12h14" />
+    <path d="m12 5 7 7-7 7" />
+  </svg>
+);
+export const GraduationCap = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M22 10 12 5 2 10l10 5 10-5z" />
+    <path d="M6 12v5c0 1 2.7 2.5 6 2.5s6-1.5 6-2.5v-5" />
+  </svg>
+);
+export const Clock = (p: P) => (
+  <svg {...base(p)}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7v5l3 2" />
+  </svg>
+);
+
+export const Download = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <path d="M7 10l5 5 5-5" />
+    <path d="M12 15V3" />
+  </svg>
+);
+</file>
+
+<file path="src/components/Navbar.tsx">
+import Link from "next/link";
+import { GraduationCap, Lock } from "./icons";
+
+export function Navbar() {
+  return (
+    <header className="sticky top-0 z-40 border-b border-[#e6e5e3] bg-white/90 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3.5">
+        <Link href="/" className="flex items-center gap-2.5">
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand-600 text-white">
+            <GraduationCap width={20} height={20} />
+          </span>
+          <span className="font-display text-lg font-800 tracking-tight text-ink-900">
+            EduPass <span className="text-brand-600">GH</span>
+          </span>
+        </Link>
+        <div className="flex items-center gap-4">
+          <a href="#products" className="hidden text-sm font-semibold text-ink-700 hover:text-brand-600 sm:block">
+            Vouchers
+          </a>
+          <a href="#how" className="hidden text-sm font-semibold text-ink-700 hover:text-brand-600 sm:block">
+            How it works
+          </a>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-500/10 px-3 py-1 text-xs font-semibold text-accent-700">
+            <Lock width={14} height={14} /> Secure
+          </span>
+        </div>
+      </div>
+    </header>
+  );
+}
+</file>
+
+<file path="src/components/ProductCard.tsx">
+import Link from "next/link";
+import { Product, formatGHS } from "@/lib/products";
+import { ArrowRight, Bolt, Check, MessageCircle } from "./icons";
+
+export function ProductCard({ product }: { product: Product }) {
+  const isForm = product.category === "FORM";
+  return (
+    <div className="card flex flex-col p-6 transition-transform duration-200 hover:-translate-y-0.5">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <span
+            className={
+              "grid h-11 w-11 place-items-center rounded-xl " +
+              (isForm ? "bg-accent-500/10 text-accent-700" : "bg-brand-50 text-brand-600")
+            }
+          >
+            {isForm ? <MessageCircle /> : <Bolt />}
+          </span>
+        </div>
+        {product.badge && <span className="chip">{product.badge}</span>}
+      </div>
+
+      <h3 className="mt-4 font-display text-lg font-700 text-ink-900">{product.name}</h3>
+      <p className="mt-1.5 text-sm leading-relaxed text-ink-500">{product.description}</p>
+
+      <ul className="mt-4 space-y-2">
+        {product.highlights.map((h) => (
+          <li key={h} className="flex items-center gap-2 text-sm text-ink-700">
+            <span className="grid h-5 w-5 place-items-center rounded-full bg-accent-500/10 text-accent-700">
+              <Check width={13} height={13} />
+            </span>
+            {h}
+          </li>
+        ))}
+      </ul>
+
+      <div className="mt-6 flex items-end justify-between border-t border-[#f0efed] pt-5">
+        <div>
+          <span className="font-display text-2xl font-800 text-ink-900">{formatGHS(product.amount)}</span>
+          <span className="ml-1 text-xs text-ink-500">one-time</span>
+        </div>
+        <Link
+          href={`/checkout?product=${product.id}`}
+          className={isForm ? "btn-accent" : "btn-primary"}
+        >
+          Buy now <ArrowRight width={16} height={16} />
+        </Link>
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="src/lib/db.ts">
+import { PrismaClient } from "@prisma/client";
+
+// Reuse a single PrismaClient across hot reloads in dev.
+const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
+
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],
+  });
+
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+</file>
+
+<file path="src/lib/email.ts">
+// Sends transactional emails via Brevo's HTTP API (https://www.brevo.com).
+// Uses a direct fetch call, so no extra npm package is required.
+
+export async function sendVoucherEmail(params: {
+  to: string;
+  productName: string;
+  code: string;
+  reference: string;
+}): Promise<void> {
+  const { to, productName, code, reference } = params;
+
+  const apiKey = process.env.BREVO_API_KEY;
+  if (!apiKey) throw new Error("BREVO_API_KEY is not set");
+
+  const fromEmail = process.env.MAIL_FROM_EMAIL;
+  const fromName = process.env.MAIL_FROM_NAME || "EduPass GH";
+  if (!fromEmail) throw new Error("MAIL_FROM_EMAIL is not set");
+
+  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      "api-key": apiKey,
+      "Content-Type": "application/json",
+      accept: "application/json",
+    },
+    body: JSON.stringify({
+      sender: { email: fromEmail, name: fromName },
+      to: [{ email: to }],
+      subject: `Your ${productName} \u2014 voucher code inside`,
+      textContent: `Thank you for your purchase!\n\nProduct: ${productName}\nVoucher code / PIN: ${code}\nReference: ${reference}\n\nKeep this code safe. It is single-use.`,
+      htmlContent: voucherEmailHtml({ productName, code, reference, fromName }),
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`Brevo email failed: ${res.status} ${body}`);
+  }
+}
+
+function voucherEmailHtml(p: {
+  productName: string;
+  code: string;
+  reference: string;
+  fromName: string;
+}): string {
+  return `<!doctype html><html><body style="margin:0;background:#f4f6fb;font-family:Segoe UI,Arial,sans-serif;color:#0f172a">
+  <div style="max-width:520px;margin:0 auto;padding:32px 20px">
+    <div style="background:#1746a2;color:#fff;border-radius:12px 12px 0 0;padding:20px 24px;font-size:18px;font-weight:700">${p.fromName}</div>
+    <div style="background:#fff;border:1px solid #e6e5e3;border-top:0;border-radius:0 0 12px 12px;padding:24px">
+      <p style="margin:0 0 8px">Thank you for your purchase.</p>
+      <p style="margin:0 0 16px;color:#64748b">Here is your <strong>${p.productName}</strong>.</p>
+      <div style="background:#eef4ff;border:1px dashed #1746a2;border-radius:12px;padding:20px;text-align:center;margin:16px 0">
+        <div style="font-size:12px;letter-spacing:.08em;color:#1746a2;text-transform:uppercase">Voucher code / PIN</div>
+        <div style="font-size:26px;font-weight:800;letter-spacing:.06em;margin-top:6px">${p.code}</div>
+      </div>
+      <p style="font-size:13px;color:#64748b;margin:0">Reference: ${p.reference}</p>
+      <p style="font-size:13px;color:#64748b;margin:8px 0 0">Keep this code safe \u2014 it is single-use. If you have any issues, reply to this email.</p>
+    </div>
+  </div>
+</body></html>`;
+}
+</file>
+
+<file path="src/lib/fulfilment.ts">
+import { prisma } from "./db";
+import { getProduct } from "./products";
+import { dispenseVoucher, OutOfStockError } from "./inventory";
+import { sendVoucherEmail } from "./email";
+import { verifyTransaction } from "./paystack";
+
+export interface FulfilmentResult {
+  ok: boolean;
+  category: "VOUCHER" | "FORM" | null;
+  status: string;
+  voucherCode?: string;
+  productName?: string;
+  email?: string;
+  reference: string;
+  message?: string;
+}
+
+/**
+ * The single, shared fulfilment routine. Called by BOTH the webhook and the
+ * browser-redirect verify endpoint, so it must be fully idempotent.
+ *
+ * Steps:
+ *   1. Re-verify the transaction against Paystack (server-side source of truth).
+ *   2. Confirm the amount/currency matches the order we created.
+ *   3. VOUCHER -> atomically dispense a code + email it.
+ *      FORM    -> just mark paid; the UI shows the WhatsApp button.
+ */
+export async function fulfilByReference(reference: string): Promise<FulfilmentResult> {
+  const order = await prisma.order.findUnique({ where: { reference } });
+  if (!order) {
+    return { ok: false, category: null, status: "UNKNOWN_ORDER", reference, message: "Order not found" };
+  }
+
+  // Already done -> return the same result (idempotent).
+  if (order.status === "FULFILLED") {
+    return {
+      ok: true,
+      category: order.category as "VOUCHER" | "FORM",
+      status: "FULFILLED",
+      voucherCode: order.voucherCode ?? undefined,
+      productName: getProduct(order.productType)?.name,
+      email: order.email,
+      reference,
+    };
+  }
+
+  // 1) Verify with Paystack.
+  const tx = await verifyTransaction(reference);
+  if (tx.status !== "success") {
+    await prisma.order.update({ where: { reference }, data: { status: "FAILED" } });
+    return { ok: false, category: order.category as any, status: "PAYMENT_NOT_SUCCESSFUL", reference };
+  }
+
+  // 2) Amount + currency must match what we asked for (anti-tamper).
+  if (tx.amount < order.amount || tx.currency !== order.currency) {
+    await prisma.order.update({ where: { reference }, data: { status: "FAILED" } });
+    return { ok: false, category: order.category as any, status: "AMOUNT_MISMATCH", reference };
+  }
+
+  await prisma.order.update({ where: { reference }, data: { status: "PAID" } });
+
+  const product = getProduct(order.productType);
+  if (!product) {
+    return { ok: false, category: null, status: "UNKNOWN_PRODUCT", reference };
+  }
+
+  // 3a) University form -> manual WhatsApp fulfilment. Nothing to dispense.
+  if (product.category === "FORM") {
+    await prisma.order.update({ where: { reference }, data: { status: "FULFILLED" } });
+    return {
+      ok: true,
+      category: "FORM",
+      status: "FULFILLED",
+      productName: product.name,
+      email: order.email,
+      reference,
+    };
+  }
+
+  // 3b) Voucher -> dispense atomically, then email.
+  try {
+    const code = await dispenseVoucher({
+      voucherType: product.voucherType!,
+      email: order.email,
+      reference,
+    });
+
+    // Persist the code on the order before emailing so it's never lost.
+    await prisma.order.update({
+      where: { reference },
+      data: { status: "FULFILLED", voucherCode: code },
+    });
+
+    // Email the code. Failure to email should not "unsell" the code; we log and
+    // let the user still see it on-screen + retry email out of band.
+    if (!order.emailSent) {
+      try {
+        await sendVoucherEmail({ to: order.email, productName: product.name, code, reference });
+        await prisma.order.update({ where: { reference }, data: { emailSent: true } });
+      } catch (err) {
+        console.error(`[fulfilment] email failed for ${reference}:`, err);
+      }
+    }
+
+    return {
+      ok: true,
+      category: "VOUCHER",
+      status: "FULFILLED",
+      voucherCode: code,
+      productName: product.name,
+      email: order.email,
+      reference,
+    };
+  } catch (err) {
+    if (err instanceof OutOfStockError) {
+      await prisma.order.update({ where: { reference }, data: { status: "OUT_OF_STOCK" } });
+      return {
+        ok: false,
+        category: "VOUCHER",
+        status: "OUT_OF_STOCK",
+        reference,
+        productName: product.name,
+        email: order.email,
+        message: "Payment received but stock is empty. We will resolve manually.",
+      };
+    }
+    throw err;
+  }
+}
+</file>
+
+<file path="src/lib/inventory.ts">
+import { prisma } from "./db";
+
+export class OutOfStockError extends Error {
+  constructor(productType: string) {
+    super(`No available vouchers for ${productType}`);
+    this.name = "OutOfStockError";
+  }
+}
+
+/**
+ * Atomically dispense exactly one voucher for a given product type and bind it
+ * to a Paystack reference.
+ *
+ * Guarantees:
+ *  - Idempotent: if this reference already claimed a code, that same code is
+ *    returned (webhooks can fire more than once).
+ *  - Race-safe: a conditional update (WHERE status = AVAILABLE) means two
+ *    concurrent requests can never dispense the same code. The loser retries.
+ *  - Never over-sells: if nothing is available, throws OutOfStockError.
+ */
+export async function dispenseVoucher(params: {
+  voucherType: string;
+  email: string;
+  reference: string;
+}): Promise<string> {
+  const { voucherType, email, reference } = params;
+
+  // 1) Idempotency: has this reference already been fulfilled?
+  const existing = await prisma.voucher.findFirst({
+    where: { reference, productType: voucherType },
+  });
+  if (existing) return existing.code;
+
+  // 2) Try to claim an available code. Retry a few times to survive races.
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const candidate = await prisma.voucher.findFirst({
+      where: { productType: voucherType, status: "AVAILABLE" },
+      orderBy: { createdAt: "asc" },
+      select: { id: true, code: true },
+    });
+
+    if (!candidate) throw new OutOfStockError(voucherType);
+
+    // Conditional update: only succeeds if the row is STILL available.
+    const claimed = await prisma.voucher.updateMany({
+      where: { id: candidate.id, status: "AVAILABLE" },
+      data: {
+        status: "SOLD",
+        soldTo: email,
+        reference,
+        soldAt: new Date(),
+      },
+    });
+
+    if (claimed.count === 1) return candidate.code;
+    // Otherwise another request grabbed it first -> loop and try again.
+  }
+
+  throw new Error("Could not claim a voucher after multiple attempts");
+}
+
+/** Stock levels per voucher type, for the admin report. */
+export async function getStockReport() {
+  const grouped = await prisma.voucher.groupBy({
+    by: ["productType", "status"],
+    _count: { _all: true },
+  });
+
+  const report: Record<string, { available: number; sold: number; reserved: number }> = {};
+  for (const row of grouped) {
+    report[row.productType] ??= { available: 0, sold: 0, reserved: 0 };
+    if (row.status === "AVAILABLE") report[row.productType].available = row._count._all;
+    if (row.status === "SOLD") report[row.productType].sold = row._count._all;
+    if (row.status === "RESERVED") report[row.productType].reserved = row._count._all;
+  }
+  return report;
+}
+
+/** How many codes are available for a given type (for the storefront badge). */
+export async function countAvailable(voucherType: string): Promise<number> {
+  return prisma.voucher.count({
+    where: { productType: voucherType, status: "AVAILABLE" },
+  });
+}
+</file>
+
+<file path="src/lib/paystack.ts">
+import crypto from "crypto";
+
+const PAYSTACK_BASE = "https://api.paystack.co";
+
+function secretKey(): string {
+  const key = process.env.PAYSTACK_SECRET_KEY;
+  if (!key) throw new Error("PAYSTACK_SECRET_KEY is not set");
+  return key;
+}
+
+export interface InitializeArgs {
+  email: string;
+  amount: number; // minor units (pesewas)
+  currency?: string;
+  reference: string;
+  callbackUrl: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface PaystackInitializeResponse {
+  authorization_url: string;
+  access_code: string;
+  reference: string;
+}
+
+/** Create a transaction and get the hosted checkout URL. Server-side only. */
+export async function initializeTransaction(
+  args: InitializeArgs,
+): Promise<PaystackInitializeResponse> {
+  const res = await fetch(`${PAYSTACK_BASE}/transaction/initialize`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${secretKey()}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email: args.email,
+      amount: args.amount,
+      currency: args.currency ?? "GHS",
+      reference: args.reference,
+      callback_url: args.callbackUrl,
+      metadata: args.metadata ?? {},
+    }),
+    cache: "no-store",
+  });
+
+  const json = await res.json();
+  if (!res.ok || !json.status) {
+    throw new Error(json?.message || "Paystack initialize failed");
+  }
+  return json.data as PaystackInitializeResponse;
+}
+
+export interface VerifiedTransaction {
+  reference: string;
+  status: string; // "success" when paid
+  amount: number; // minor units actually paid
+  currency: string;
+  paidAt: string | null;
+  customerEmail: string | null;
+  metadata: Record<string, unknown> | null;
+}
+
+/**
+ * Verify a transaction directly against Paystack. This is the ONLY source of
+ * truth for whether money was received. Never trust the browser redirect alone.
+ */
+export async function verifyTransaction(
+  reference: string,
+): Promise<VerifiedTransaction> {
+  const res = await fetch(
+    `${PAYSTACK_BASE}/transaction/verify/${encodeURIComponent(reference)}`,
+    {
+      method: "GET",
+      headers: { Authorization: `Bearer ${secretKey()}` },
+      cache: "no-store",
+    },
+  );
+
+  const json = await res.json();
+  if (!res.ok || !json.status) {
+    throw new Error(json?.message || "Paystack verify failed");
+  }
+
+  const d = json.data;
+  return {
+    reference: d.reference,
+    status: d.status,
+    amount: d.amount,
+    currency: d.currency,
+    paidAt: d.paid_at ?? null,
+    customerEmail: d.customer?.email ?? null,
+    metadata: d.metadata ?? null,
+  };
+}
+
+/**
+ * Verify the webhook signature. Paystack signs the RAW request body with
+ * HMAC-SHA512 using your secret key and sends it in the x-paystack-signature
+ * header. Compare using a timing-safe comparison.
+ */
+export function isValidWebhookSignature(
+  rawBody: string,
+  signature: string | null,
+): boolean {
+  if (!signature) return false;
+  const expected = crypto
+    .createHmac("sha512", secretKey())
+    .update(rawBody, "utf8")
+    .digest("hex");
+  const a = Buffer.from(expected);
+  const b = Buffer.from(signature);
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
+}
+
+/** Generate a unique, readable payment reference. */
+export function newReference(prefix = "EPG"): string {
+  return `${prefix}_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
+}
+
+/**
+ * Paystack Ghana charges a percentage fee per transaction (1.95% by default).
+ * Override with the PAYSTACK_FEE_PERCENT env var if your rate differs.
+ */
+const FEE_RATE = (() => {
+  const pct = Number(process.env.PAYSTACK_FEE_PERCENT);
+  return Number.isFinite(pct) && pct > 0 ? pct / 100 : 0.0195;
+})();
+
+/**
+ * Gross up an amount (in minor units / pesewas) so that AFTER Paystack deducts
+ * its percentage fee, you still net the original amount. Rounds up to the
+ * nearest pesewa so your payout never falls short.
+ *
+ * Example: GHS 25 (2500) -> 2550, i.e. the customer pays GHS 25.50 and you
+ * receive ~GHS 25.
+ */
+export function withPaystackFee(amountMinor: number): number {
+  return Math.ceil(amountMinor / (1 - FEE_RATE));
+}
+</file>
+
+<file path="src/lib/products.ts">
+// Single source of truth for the catalog.
+// Amounts are in the smallest currency unit (pesewas). GHS 25 -> 2500.
+
+export type ProductCategory = "VOUCHER" | "FORM";
+
+export interface Product {
+  id: string;
+  name: string;
+  shortName: string;
+  category: ProductCategory;
+  /** For VOUCHER products, the Voucher.productType key used for inventory. */
+  voucherType?: "WASSCE" | "WASSCE_PRIVATE" | "BECE";
+  amount: number; // minor units (pesewas)
+  currency: "GHS";
+  description: string;
+  highlights: string[];
+  badge?: string;
+}
+
+export const PRODUCTS: Product[] = [
+  {
+    id: "wassce",
+    name: "WASSCE Checker Voucher",
+    shortName: "WASSCE",
+    category: "VOUCHER",
+    voucherType: "WASSCE",
+    amount: 2500,
+    currency: "GHS",
+    description:
+      "Official WASSCE results checker voucher (school candidates). Delivered instantly after payment.",
+    highlights: ["Instant delivery", "Emailed automatically", "Single-use PIN"],
+    badge: "Most popular",
+  },
+  {
+    id: "wassce-private",
+    name: "Private WASSCE Checker Voucher",
+    shortName: "Private WASSCE",
+    category: "VOUCHER",
+    voucherType: "WASSCE_PRIVATE",
+    amount: 2500,
+    currency: "GHS",
+    description:
+      "WASSCE results checker voucher for private / GBCE candidates. Delivered instantly after payment.",
+    highlights: ["Instant delivery", "Emailed automatically", "Single-use PIN"],
+  },
+  {
+    id: "bece",
+    name: "BECE Checker Voucher",
+    shortName: "BECE",
+    category: "VOUCHER",
+    voucherType: "BECE",
+    amount: 2500,
+    currency: "GHS",
+    description:
+      "Official BECE results checker voucher. Delivered instantly after payment.",
+    highlights: ["Instant delivery", "Emailed automatically", "Single-use PIN"],
+  },
+  {
+    id: "university-form",
+    name: "University Admission Form",
+    shortName: "University Form",
+    category: "FORM",
+    amount: 30000,
+    currency: "GHS",
+    description:
+      "Purchase a university admission form. After payment you'll be connected on WhatsApp so we can send your form and guide you.",
+    highlights: [
+      "Personal WhatsApp support",
+      "Form sent manually after payment",
+      "Guided application help",
+    ],
+    badge: "Assisted",
+  },
+];
+
+export function getProduct(id: string): Product | undefined {
+  return PRODUCTS.find((p) => p.id === id);
+}
+
+export function formatGHS(minorUnits: number): string {
+  return new Intl.NumberFormat("en-GH", {
+    style: "currency",
+    currency: "GHS",
+  }).format(minorUnits / 100);
+}
+</file>
+
+<file path="src/lib/whatsapp.ts">
+// Build a wa.me deep link with a pre-filled message to your support number.
+const WA_HOST = "wa.me";
+
+export function buildWhatsAppLink(params: {
+  reference: string;
+  productName: string;
+  email: string;
+}): string {
+  const number =
+    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "233256767495";
+  const message =
+    `Hello! I have paid for the "${params.productName}".\n` +
+    `Payment reference: ${params.reference}\n` +
+    `Email: ${params.email}\n` +
+    `Please send me my form. Thank you!`;
+  const text = encodeURIComponent(message);
+  return `https://${WA_HOST}/${number}?text=${text}`;
+}
+</file>
+
+<file path=".gitignore">
+# dependencies
+/node_modules
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# env
+.env
+.env*.local
+
+# database
+*.db
+*.db-journal
+prisma/dev.db*
+
+# misc
+.DS_Store
+*.log
+</file>
+
+<file path="next-env.d.ts">
+/// <reference types="next" />
+/// <reference types="next/image-types/global" />
+
+// NOTE: This file should not be edited
+// see https://nextjs.org/docs/app/building-your-application/configuring/typescript for more information.
+</file>
+
+<file path="next.config.mjs">
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+};
+
+export default nextConfig;
+</file>
+
+<file path="package.json">
+{
+  "name": "exam-voucher-store",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Secure, automated storefront for selling digital exam vouchers (WASSCE, Private WASSCE, BECE) and handling university form inquiries via Paystack.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "vouchers:upload": "tsx scripts/upload-vouchers.ts",
+    "vouchers:stock": "tsx scripts/stock-report.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.18.0",
+    "@sendgrid/mail": "^8.1.3",
+    "next": "^14.2.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.40",
+    "prisma": "^5.18.0",
+    "tailwindcss": "^3.4.7",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.4"
+  }
+}
+</file>
+
+<file path="postcss.config.mjs">
+export default {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+};
+</file>
+
+<file path="README.md">
+# EduPass GH \u2014 Exam Voucher Store
+
+A secure, automated Next.js web application for selling digital examination
+vouchers (WASSCE, Private WASSCE, BECE) and handling university admission form
+inquiries. Payments are processed and **verified server-side** with Paystack;
+voucher codes are dispensed atomically and emailed automatically; university
+forms route buyers to a pre-filled WhatsApp message.
+
+---
+
+## 1. Tech stack
+
+| Concern            | Choice                                             |
+| ------------------ | -------------------------------------------------- |
+| Framework          | Next.js 14 (App Router) + TypeScript               |
+| UI                 | Tailwind CSS, custom design system, inline SVG icons |
+| Database / ORM     | Prisma + SQLite (swap to Postgres/MySQL for prod)  |
+| Payments           | Paystack (initialize + verify + webhook)           |
+| Email              | SendGrid                                           |
+| Fulfilment (forms) | WhatsApp deep link (wa.me)                          |
+
+> **On the design:** The UI applies the design intelligence from the
+> **UI UX Pro Max** skill repo you shared (trust-forward pattern: hero + social
+> proof + trust badges, Soft-UI/minimalist style, education/fintech palette, no
+> AI purple gradients, SVG icons, 44px tap targets, WCAG-AA contrast, responsive
+> at 375/768/1024/1440px).
+>
+> **On "MCP tools":** the backend logic is implemented directly in the codebase
+> (`src/lib/*` + API routes) rather than through an external MCP server, so it
+> runs anywhere with no extra services to install.
+
+---
+
+## 2. Project structure
+
+```
+exam-voucher-store/
+├─ prisma/
+│  ├─ schema.prisma          # Voucher + Order models, enums
+│  └─ seed.ts                # optional: load sample codes
+├─ data/
+│  └─ sample-vouchers.csv    # example bulk-upload file
+├─ scripts/
+│  ├─ upload-vouchers.ts     # MANUAL bulk upload of codes (CSV/TXT)
+│  └─ stock-report.ts        # CLI stock levels per type
+├─ src/
+│  ├─ app/
+│  │  ├─ layout.tsx          # fonts + globals
+│  │  ├─ page.tsx            # storefront (product display)
+│  │  ├─ checkout/page.tsx   # checkout page
+│  │  ├─ success/page.tsx    # post-payment: voucher reveal OR WhatsApp button
+│  │  ├─ globals.css
+│  │  └─ api/
+│  │     ├─ paystack/initialize/route.ts  # create order + hosted checkout URL
+│  │     ├─ paystack/verify/route.ts      # redirect verify (idempotent)
+│  │     ├─ paystack/webhook/route.ts     # signed webhook (primary fulfilment)
+│  │     ├─ stock/route.ts                # admin-only stock JSON
+│  │     └─ admin/overview/route.ts       # admin-only KPIs + stock + recent orders
+│  │  └─ admin/page.tsx      # admin dashboard (token-gated)
+│  ├─ components/            # Navbar, Footer, ProductCard, icons
+│  └─ lib/
+│     ├─ products.ts         # catalog (prices in pesewas) \u2014 SOURCE OF TRUTH
+│     ├─ paystack.ts         # initialize, verify, HMAC signature check
+│     ├─ inventory.ts        # atomic dispense + stock queries
+│     ├─ fulfilment.ts       # shared idempotent fulfilment routine
+│     ├─ email.ts            # SendGrid voucher email
+│     ├─ whatsapp.ts         # wa.me deep link builder
+│     └─ db.ts               # Prisma client singleton
+├─ preview/index.html        # static design preview (for quick visual review)
+├─ .env.example
+└─ package.json
+```
+
+---
+
+## 3. Getting started
+
+```bash
+npm install
+cp .env.example .env          # then fill in real keys
+npx prisma migrate dev --name init
+npx tsx prisma/seed.ts        # optional: load sample codes
+npm run dev                   # http://localhost:3000
+```
+
+---
+
+## 4. The "manual upload, automatic dispensing" system
+
+**Manual upload (you):** drop a CSV/TXT of codes and import them.
+
+```bash
+# one type for the whole file
+npm run vouchers:upload -- --type WASSCE --file ./data/wassce-batch.csv
+# or a per-row "type" column (see data/sample-vouchers.csv)
+npm run vouchers:upload -- --file ./data/mixed-batch.csv
+```
+
+Re-running is safe \u2014 `code` is unique and duplicates are skipped.
+
+**Automatic dispensing (system):** after a verified payment,
+`inventory.dispenseVoucher()` claims exactly one `AVAILABLE` code using a
+conditional `UPDATE ... WHERE status = 'AVAILABLE'`. This is:
+
+- **Race-safe** \u2014 two concurrent buyers can never get the same code.
+- **Idempotent** \u2014 replays for the same Paystack reference return the same code.
+- **No over-selling** \u2014 empty stock raises `OutOfStockError` and the order is
+  flagged `OUT_OF_STOCK` instead of charging silently.
+
+Check levels anytime: `npm run vouchers:stock`.
+
+---
+
+## 5. Payment + security flow
+
+1. **Checkout** \u2192 `POST /api/paystack/initialize` creates a `PENDING` order using
+   the **server-side price** (never trusts the client) and returns Paystack's
+   hosted checkout URL.
+2. Buyer pays on Paystack and is redirected to `/success?reference=...`.
+3. **Two independent fulfilment triggers**, both calling the same idempotent
+   `fulfilByReference()`:
+   - **Webhook** (`/api/paystack/webhook`) \u2014 primary. Verifies the
+     `x-paystack-signature` HMAC-SHA512 over the raw body, then re-verifies the
+     transaction via the Paystack API before releasing anything.
+   - **Redirect verify** (`/api/paystack/verify`) \u2014 gives the buyer instant
+     on-screen feedback.
+4. Fulfilment re-verifies **status = success** and that the **amount + currency
+   match** the order (anti-tampering) before dispensing.
+5. **Voucher** \u2192 dispense + email + show on screen. **Form** \u2192 mark paid + show
+   pre-filled WhatsApp button.
+
+### Configure the Paystack webhook
+Dashboard \u2192 Settings \u2192 API Keys & Webhooks \u2192 set the webhook URL to:
+```
+https://YOUR_DOMAIN/api/paystack/webhook
+```
+
+---
+
+## 6. Admin dashboard
+
+Visit `/admin` and sign in with your `ADMIN_API_TOKEN`. You get:
+
+- **KPIs:** fulfilled revenue, fulfilled/pending counts, failed/out-of-stock, total codes in stock.
+- **Voucher stock** per type, with a **Low** badge when ≤ 5 remain.
+- **Recent orders** table (date, product, email, amount, status, dispensed code).
+- **Revenue chart** (dependency-free SVG bar chart of fulfilled revenue) with a
+  **Daily / Weekly** toggle, respecting the date + product filters.
+- **Filters:** date range (From / To), **product**, and **status** — all applied
+  consistently to the orders table, its count, and the CSV export.
+- **Export CSV** of the orders in the current range — RFC-4180 quoted, UTF-8 with
+  BOM so Excel renders GH₵ and accents correctly. Served by
+  `GET /api/admin/export?from=&to=&product=&status=` (admin only).
+
+- **Export summary** — a revenue-summary CSV with three sections: revenue by
+  product, orders by status, and revenue by day/week. Served by
+  `GET /api/admin/summary?from=&to=&product=&status=&bucket=` (admin only).
+
+Filter logic is centralised in `src/lib/adminFilters.ts` (including day/week
+bucketing) so the table, chart, and both CSV exports stay perfectly in sync.
+
+The token is sent as a Bearer header and cached in the browser session only.
+
+## 7. Switching to PostgreSQL (production)
+
+SQLite is the zero-config default. For production, use Postgres:
+
+1. Copy `prisma/schema.postgres.prisma` over `prisma/schema.prisma`.
+2. Set `DATABASE_URL` to your Postgres URL, e.g.
+   `postgresql://user:pass@host:5432/edupass?schema=public`.
+3. Run `npx prisma migrate dev --name init`.
+
+All application logic (atomic dispensing, idempotency, webhooks) is unchanged.
+
+## 8. Going to production
+
+- Switch Prisma `provider` to `postgresql` and set `DATABASE_URL`.
+- Set all `.env` values (use **live** Paystack keys).
+- Verify a SendGrid sender/domain for `MAIL_FROM_EMAIL`.
+- Set `NEXT_PUBLIC_WHATSAPP_NUMBER` (international format, no `+`).
+- Deploy (Vercel, Render, a VPS, etc.) and register the webhook URL.
+
+## 9. Security notes
+
+- Secret keys are server-only; the browser only sees the public Paystack key.
+- Money is **only** released after a server-side verify \u2014 the redirect alone is
+  never trusted.
+- Webhook signature is checked with a timing-safe comparison.
+- Prices come from the server catalog, so a tampered client cannot underpay.
+- The admin stock endpoint requires a bearer token (`ADMIN_API_TOKEN`).
+</file>
+
+<file path="tailwind.config.ts">
+import type { Config } from "tailwindcss";
+
+const config: Config = {
+  content: [
+    "./src/app/**/*.{ts,tsx}",
+    "./src/components/**/*.{ts,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        // Trust-forward palette (education + payments). No AI purple gradients.
+        brand: {
+          50: "#eef4ff",
+          100: "#d9e6ff",
+          200: "#bcd3ff",
+          300: "#8eb6ff",
+          400: "#598eff",
+          500: "#2f66f6",
+          600: "#1746a2", // primary
+          700: "#123a86",
+          800: "#12316d",
+          900: "#132c5c",
+        },
+        accent: {
+          // Emerald = success / "secure" / go
+          500: "#10b981",
+          600: "#059669",
+          700: "#047857",
+        },
+        ink: {
+          900: "#0f172a",
+          700: "#334155",
+          500: "#64748b",
+        },
+      },
+      fontFamily: {
+        sans: ["Inter", "system-ui", "sans-serif"],
+        display: ["Sora", "Inter", "system-ui", "sans-serif"],
+      },
+      boxShadow: {
+        soft: "0 1px 2px rgba(0,0,0,.05), 0 4px 12px rgba(0,0,0,.04)",
+        card: "0 1px 3px rgba(15,23,42,.06), 0 8px 24px rgba(15,23,42,.06)",
+      },
+      borderRadius: {
+        xl: "12px",
+      },
+    },
+  },
+  plugins: [],
+};
+
+export default config;
+</file>
+
+<file path="tsconfig.json">
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [{ "name": "next" }],
+    "paths": { "@/*": ["./src/*"] }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
+</file>
+
+<file path="data/sample-vouchers.csv">
+code,type
+BEC-3001-FFFF-6666,BECE
+WGR250520860|697007525825,WASSCE
+WGR250520861|697007915165,WASSCE
+WGR250520862|697008063525,WASSCE
+WGR250520863|697008203921,WASSCE_PRIVATE
+</file>
+
+<file path="src/app/api/admin/export/route.ts">
+import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/db";
+import { getProduct } from "@/lib/products";
+import { buildOrderWhere } from "@/lib/adminFilters";
+
+export const dynamic = "force-dynamic";
+
+function authorized(req: Request): boolean {
+  const token = process.env.ADMIN_API_TOKEN;
+  if (!token) return false;
+  return req.headers.get("authorization") === `Bearer ${token}`;
+}
+
+// Quote a CSV cell if it contains a comma, quote, or newline (RFC 4180).
+function cell(value: unknown): string {
+  const s = value == null ? "" : String(value);
+  return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+/**
+ * GET /api/admin/export?from=&to=&product=&status=   (admin only)
+ * Streams a CSV of orders matching the same filters as the dashboard table.
+ * Auth: Authorization: Bearer <ADMIN_API_TOKEN>
+ */
+export async function GET(req: Request) {
+  if (!authorized(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const url = new URL(req.url);
+  const where = buildOrderWhere(url);
+
+  const orders = await prisma.order.findMany({
+    where: where as Prisma.OrderWhereInput,
+    orderBy: { createdAt: "desc" },
+  });
+
+  const header = [
+    "Reference",
+    "Date (UTC)",
+    "Product",
+    "Email",
+    "Phone",
+    "Category",
+    "Amount (GHS)",
+    "Currency",
+    "Status",
+    "Voucher Code",
+    "Email Sent",
+  ];
+
+  const rows = orders.map((o) => [
+    o.reference,
+    o.createdAt.toISOString(),
+    getProduct(o.productType)?.name ?? o.productType,
+    o.email,
+    o.phone ?? "",
+    o.category,
+    (o.amount / 100).toFixed(2),
+    o.currency,
+    o.status,
+    o.voucherCode ?? "",
+    o.emailSent ? "yes" : "no",
+  ]);
+
+  // Prepend a UTF-8 BOM so Excel opens GH\u20b5 and accents correctly.
+  const body =
+    "\uFEFF" +
+    [header, ...rows].map((r) => r.map(cell).join(",")).join("\r\n");
+
+  const stamp = new Date().toISOString().slice(0, 10);
+  return new NextResponse(body, {
+    headers: {
+      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Disposition": `attachment; filename="edupass-orders-${stamp}.csv"`,
+      "Cache-Control": "no-store",
+    },
+  });
+}
+</file>
+
+<file path="src/lib/adminFilters.ts">
+import { OrderStatus } from "@prisma/client";
+// Shared admin query helpers used by the overview, export, and summary
+// endpoints so the dashboard table, chart, and CSVs all filter identically.
+
+export type OrderWhere = {
+  createdAt?: { gte?: Date; lte?: Date };
+  productType?: string;
+  status?: OrderStatus;
+};
+
+export type Bucket = "day" | "week";
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Parse ?from / ?to (YYYY-MM-DD) into an inclusive UTC date window. */
+export function dateWindow(url: URL): { gte?: Date; lte?: Date } {
+  const from = url.searchParams.get("from");
+  const to = url.searchParams.get("to");
+  const window: { gte?: Date; lte?: Date } = {};
+  if (from) window.gte = new Date(`${from}T00:00:00.000Z`);
+  if (to) window.lte = new Date(`${to}T23:59:59.999Z`);
+  return window;
+}
+
+/**
+ * Build a Prisma `where` for orders from ?from, ?to, ?product, ?status.
+ * `product` matches Order.productType (the catalog id); `status` matches the
+ * OrderStatus enum. "all" or missing means no constraint on that field.
+ */
+export function buildOrderWhere(url: URL): OrderWhere {
+  const where: OrderWhere = {};
+  const window = dateWindow(url);
+  if (window.gte || window.lte) where.createdAt = window;
+
+  const product = url.searchParams.get("product");
+  if (product && product !== "all") where.productType = product;
+
+  const status = url.searchParams.get("status");
+  if (status && status !== "all") where.status = status as OrderStatus;
+
+  return where;
+}
+
+/**
+ * Revenue where: date + product filters only, forced to FULFILLED. Used by the
+ * chart and revenue summary so the numbers reflect real money regardless of the
+ * status filter chosen for the table.
+ */
+export function buildRevenueWhere(url: URL): OrderWhere {
+  const where: OrderWhere = { status: "FULFILLED" };
+  const window = dateWindow(url);
+  if (window.gte || window.lte) where.createdAt = window;
+  const product = url.searchParams.get("product");
+  if (product && product !== "all") where.productType = product;
+  return where;
+}
+
+/** "day" (default) or "week" from ?bucket. */
+export function bucketMode(url: URL): Bucket {
+  return url.searchParams.get("bucket") === "week" ? "week" : "day";
+}
+
+/** Monday 00:00 UTC of the week containing `d`. */
+function startOfUtcWeek(d: Date): Date {
+  const dow = (d.getUTCDay() + 6) % 7; // 0 = Monday
+  const s = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  s.setUTCDate(s.getUTCDate() - dow);
+  return s;
+}
+
+function startOfUtcDay(d: Date): Date {
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+}
+
+/** The bucket key (YYYY-MM-DD of the day, or of the week's Monday). */
+export function keyForDate(d: Date, mode: Bucket): string {
+  return (mode === "week" ? startOfUtcWeek(d) : startOfUtcDay(d))
+    .toISOString()
+    .slice(0, 10);
+}
+
+/**
+ * Ordered bucket keys + display labels spanning the effective range.
+ * Defaults: last 14 days, or last 12 weeks in weekly mode. Capped at 60 buckets.
+ */
+export function bucketAxis(url: URL): {
+  mode: Bucket;
+  keys: string[];
+  labels: Record<string, string>;
+  gte: Date;
+  lte: Date;
+} {
+  const mode = bucketMode(url);
+  const window = dateWindow(url);
+  const end = window.lte ?? new Date();
+  const defaultStart =
+    mode === "week"
+      ? new Date(end.getTime() - 11 * 7 * DAY_MS)
+      : new Date(end.getTime() - 13 * DAY_MS);
+  const start = window.gte ?? defaultStart;
+
+  const keys: string[] = [];
+  const labels: Record<string, string> = {};
+  const step = mode === "week" ? 7 : 1;
+  const cursor = mode === "week" ? startOfUtcWeek(start) : startOfUtcDay(start);
+  const last = mode === "week" ? startOfUtcWeek(end) : startOfUtcDay(end);
+
+  while (cursor <= last && keys.length < 60) {
+    const k = cursor.toISOString().slice(0, 10);
+    keys.push(k);
+    labels[k] = mode === "week" ? `wk ${k.slice(5)}` : k.slice(5);
+    cursor.setUTCDate(cursor.getUTCDate() + step);
+  }
+
+  const first = keys[0] ?? startOfUtcDay(end).toISOString().slice(0, 10);
+  const lastKey = keys[keys.length - 1] ?? first;
+  const spanEnd =
+    mode === "week"
+      ? new Date(new Date(`${lastKey}T00:00:00.000Z`).getTime() + 6 * DAY_MS + (DAY_MS - 1))
+      : new Date(`${lastKey}T23:59:59.999Z`);
+
+  return {
+    mode,
+    keys,
+    labels,
+    gte: window.gte ?? new Date(`${first}T00:00:00.000Z`),
+    lte: window.lte ?? spanEnd,
+  };
+}
+</file>
+
+</files>

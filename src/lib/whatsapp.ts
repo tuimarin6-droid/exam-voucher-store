@@ -6,8 +6,8 @@ export function buildWhatsAppLink(params: {
   productName: string;
   email: string;
 }): string {
-  const number = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
-  if (!number) throw new Error("NEXT_PUBLIC_WHATSAPP_NUMBER is not set");
+  const number =
+    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "233256767495";
   const message =
     `Hello! I have paid for the "${params.productName}".\n` +
     `Payment reference: ${params.reference}\n` +

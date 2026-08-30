@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { getProduct } from "@/lib/products";
 import { initializeTransaction, newReference } from "@/lib/paystack";
 import { countAvailable } from "@/lib/inventory";
+import { computeQuote } from "@/lib/pricing";
 
 export const dynamic = "force-dynamic";
 
@@ -11,12 +12,17 @@ const bodySchema = z.object({
   productId: z.string(),
   email: z.string().email(),
   phone: z.string().min(6).optional(),
+  promoCode: z.string().max(64).optional(),
 });
 
 /**
  * POST /api/paystack/initialize
  * Creates an Order (PENDING) and returns the Paystack hosted-checkout URL.
- * The amount is taken from our server-side catalog, NEVER from the client.
+ *
+ * The amount charged is ALWAYS recomputed here via computeQuote() -- the
+ * server-side catalog price, promo discount, and processing fee -- never
+ * trusted from the client. Any total the checkout UI showed the customer is
+ * just a preview; this is the number that actually gets charged.
  */
 export async function POST(req: Request) {
   let parsed;
@@ -40,6 +46,19 @@ export async function POST(req: Request) {
     }
   }
 
+  // Authoritative price: original catalog amount, promo discount (if the
+  // code is currently valid), and dynamic processing fee -- computed
+  // server-side, right now, from the database. If the promo code the
+  // customer typed no longer validates (expired/exhausted since they typed
+  // it), we tell them rather than silently charging full price.
+  const quote = await computeQuote({ productId: product.id, promoCode: parsed.promoCode });
+  if (!quote.ok) {
+    return NextResponse.json({ error: quote.error || "Could not price this order." }, { status: 400 });
+  }
+  if (parsed.promoCode?.trim() && !quote.promoApplied) {
+    return NextResponse.json({ error: quote.promoError || "Promo code is not valid." }, { status: 400 });
+  }
+
   const reference = newReference();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const callbackUrl = `${siteUrl}/success?reference=${reference}`;
@@ -51,20 +70,29 @@ export async function POST(req: Request) {
       phone: parsed.phone,
       productType: product.id,
       category: product.category,
-      amount: product.amount,
+      amount: quote.total,
       currency: product.currency,
       status: "PENDING",
+      originalAmount: quote.originalAmount,
+      discountAmount: quote.discountAmount,
+      processingFee: quote.processingFee,
+      promoCode: quote.promoApplied?.code ?? null,
+      promoCodeId: quote.promoApplied?.id ?? null,
     },
   });
 
   try {
     const init = await initializeTransaction({
       email: parsed.email,
-      amount: product.amount,
+      amount: quote.total,
       currency: product.currency,
       reference,
       callbackUrl,
-      metadata: { productId: product.id, category: product.category },
+      metadata: {
+        productId: product.id,
+        category: product.category,
+        promoCode: quote.promoApplied?.code ?? null,
+      },
     });
     return NextResponse.json({ authorizationUrl: init.authorization_url, reference });
   } catch (err) {
