@@ -185,6 +185,45 @@ export default function HomePage() {
             <span className="inline-flex items-center gap-2"><Mail width={16} height={16} /> Emailed receipt + code</span>
             <span className="inline-flex items-center gap-2"><Lock width={16} height={16} /> Paystack secured</span>
           </div>
+
+          {/* Post-payment wait notice */}
+          <div className="mt-8 flex items-start gap-3 rounded-xl border border-accent-500/30 bg-accent-500/10 p-5">
+            <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent-500/20 text-accent-700">
+              <Clock width={18} height={18} />
+            </span>
+            <div>
+              <p className="font-600 text-ink-900">After you pay, please wait for the page to finish loading</p>
+              <p className="mt-1 text-sm text-ink-700">
+                Your voucher is issued automatically once payment is confirmed — but closing the tab or
+                refreshing too early can interrupt delivery. Stay on the page until you see your PIN or
+                a confirmation email, even if it takes a few extra seconds.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Video guide */}
+      <section className="mx-auto max-w-6xl px-5 py-16">
+        <div className="mx-auto max-w-2xl text-center">
+          <span className="chip mx-auto">Quick guide</span>
+          <h2 className="mt-3 font-display text-2xl font-800 text-ink-900 sm:text-3xl">Watch how to buy your voucher</h2>
+          <p className="mt-2 text-ink-500">
+            A short walkthrough of choosing a voucher, paying with Paystack or Mobile Money, and
+            receiving your result checker PIN.
+          </p>
+        </div>
+        <div className="mx-auto mt-8 max-w-3xl overflow-hidden rounded-xl border border-[#e6e5e3] shadow-card">
+          <div className="relative aspect-video w-full">
+            <iframe
+              className="absolute inset-0 h-full w-full"
+              src="https://www.youtube.com/embed/DEsGa5KWe8A"
+              title="How to buy a result checker voucher on EduPass GH"
+              loading="lazy"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
+          </div>
         </div>
       </section>
 
@@ -197,7 +236,7 @@ export default function HomePage() {
               <div className="flex text-accent-600">
                 {Array.from({ length: 5 }).map((_, i) => (<Star key={i} width={15} height={15} />))}
               </div>
-              <blockquote className="mt-3 text-sm leading-relaxed text-ink-700">“{r.text}”</blockquote>
+              <blockquote className="mt-3 text-sm leading-relaxed text-ink-700">"{r.text}"</blockquote>
               <figcaption className="mt-4 text-sm">
                 <span className="font-600 text-ink-900">{r.name}</span>
                 <span className="text-ink-500"> · {r.role}</span>
