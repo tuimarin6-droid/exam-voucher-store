@@ -30,34 +30,46 @@ const createSchema = z.object({
  * List every promo code with usage stats, most recently created first.
  */
 export async function GET(req: Request) {
-  if (!authorized(req)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    if (!authorized(req)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const promos = await prisma.promoCode.findMany({
+      orderBy: { createdAt: "desc" },
+      include: { _count: { select: { redemptions: true } } },
+    });
+
+    return NextResponse.json({
+      promos: promos.map((p) => ({
+        id: p.id,
+        code: p.code,
+        description: p.description,
+        discountType: p.discountType,
+        discountValue: p.discountValue,
+        scope: p.scope,
+        scopeProductId: p.scopeProductId,
+        maxUses: p.maxUses,
+        usedCount: p.usedCount,
+        minSubtotal: p.minSubtotal,
+        active: p.active,
+        startsAt: p.startsAt?.toISOString() ?? null,
+        expiresAt: p.expiresAt?.toISOString() ?? null,
+        createdAt: p.createdAt.toISOString(),
+        redemptionCount: p._count.redemptions,
+      })),
+    });
+  } catch (err) {
+    // Never let an unhandled error produce an empty/non-JSON response.
+    console.error("GET /api/admin/promos failed:", err);
+    return NextResponse.json(
+      {
+        error: "Failed to load promo codes.",
+        detail: err instanceof Error ? err.message : String(err),
+      },
+      { status: 500 }
+    );
   }
-
-  const promos = await prisma.promoCode.findMany({
-    orderBy: { createdAt: "desc" },
-    include: { _count: { select: { redemptions: true } } },
-  });
-
-  return NextResponse.json({
-    promos: promos.map((p) => ({
-      id: p.id,
-      code: p.code,
-      description: p.description,
-      discountType: p.discountType,
-      discountValue: p.discountValue,
-      scope: p.scope,
-      scopeProductId: p.scopeProductId,
-      maxUses: p.maxUses,
-      usedCount: p.usedCount,
-      minSubtotal: p.minSubtotal,
-      active: p.active,
-      startsAt: p.startsAt?.toISOString() ?? null,
-      expiresAt: p.expiresAt?.toISOString() ?? null,
-      createdAt: p.createdAt.toISOString(),
-      redemptionCount: p._count.redemptions,
-    })),
-  });
 }
 
 /**
@@ -66,45 +78,84 @@ export async function GET(req: Request) {
  * (e.g. "EDU-7F3K9Q") is generated server-side.
  */
 export async function POST(req: Request) {
-  if (!authorized(req)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  let parsed;
   try {
-    parsed = createSchema.parse(await req.json());
-  } catch (err: any) {
-    return NextResponse.json({ error: err?.errors?.[0]?.message || "Invalid request body" }, { status: 400 });
+    if (!authorized(req)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json(
+        { error: "Request body must be valid JSON." },
+        { status: 400 }
+      );
+    }
+
+    let parsed;
+    try {
+      parsed = createSchema.parse(body);
+    } catch (err: any) {
+      return NextResponse.json(
+        { error: err?.errors?.[0]?.message || "Invalid request body" },
+        { status: 400 }
+      );
+    }
+
+    if (parsed.discountType === "PERCENT" && parsed.discountValue > 100) {
+      return NextResponse.json(
+        { error: "Percent discount cannot exceed 100." },
+        { status: 400 }
+      );
+    }
+    if (parsed.scope === "PRODUCT" && !parsed.scopeProductId) {
+      return NextResponse.json(
+        { error: "scopeProductId is required when scope is PRODUCT." },
+        { status: 400 }
+      );
+    }
+
+    const code = parsed.code
+      ? normalizeCode(parsed.code)
+      : await generateUniquePromoCode();
+
+    const existing = await prisma.promoCode.findUnique({ where: { code } });
+    if (existing) {
+      return NextResponse.json(
+        { error: `Code "${code}" already exists.` },
+        { status: 409 }
+      );
+    }
+
+    const promo = await prisma.promoCode.create({
+      data: {
+        code,
+        description: parsed.description,
+        discountType: parsed.discountType,
+        discountValue: parsed.discountValue,
+        scope: parsed.scope,
+        scopeProductId: parsed.scope === "PRODUCT" ? parsed.scopeProductId : null,
+        maxUses: parsed.maxUses ?? null,
+        minSubtotal: parsed.minSubtotal ?? null,
+        startsAt: parsed.startsAt ? new Date(parsed.startsAt) : null,
+        expiresAt: parsed.expiresAt ? new Date(parsed.expiresAt) : null,
+      },
+    });
+
+    return NextResponse.json({ promo }, { status: 201 });
+  } catch (err) {
+    // Catches Prisma errors (e.g. missing table from an undeployed migration),
+    // bugs in generateUniquePromoCode, DB connection issues, etc. Without this,
+    // the function crashes and the client sees an empty body instead of a
+    // useful error — which is the "Unexpected end of JSON input" you're hitting.
+    console.error("POST /api/admin/promos failed:", err);
+    return NextResponse.json(
+      {
+        error: "Failed to create promo code.",
+        detail: err instanceof Error ? err.message : String(err),
+      },
+      { status: 500 }
+    );
   }
-
-  if (parsed.discountType === "PERCENT" && parsed.discountValue > 100) {
-    return NextResponse.json({ error: "Percent discount cannot exceed 100." }, { status: 400 });
-  }
-  if (parsed.scope === "PRODUCT" && !parsed.scopeProductId) {
-    return NextResponse.json({ error: "scopeProductId is required when scope is PRODUCT." }, { status: 400 });
-  }
-
-  const code = parsed.code ? normalizeCode(parsed.code) : await generateUniquePromoCode();
-
-  const existing = await prisma.promoCode.findUnique({ where: { code } });
-  if (existing) {
-    return NextResponse.json({ error: `Code "${code}" already exists.` }, { status: 409 });
-  }
-
-  const promo = await prisma.promoCode.create({
-    data: {
-      code,
-      description: parsed.description,
-      discountType: parsed.discountType,
-      discountValue: parsed.discountValue,
-      scope: parsed.scope,
-      scopeProductId: parsed.scope === "PRODUCT" ? parsed.scopeProductId : null,
-      maxUses: parsed.maxUses ?? null,
-      minSubtotal: parsed.minSubtotal ?? null,
-      startsAt: parsed.startsAt ? new Date(parsed.startsAt) : null,
-      expiresAt: parsed.expiresAt ? new Date(parsed.expiresAt) : null,
-    },
-  });
-
-  return NextResponse.json({ promo }, { status: 201 });
 }
