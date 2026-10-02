@@ -73,16 +73,16 @@ body {
   0%, 100% { transform: translate(0, 0); }
   50% { transform: translate(28px, 22px); }
 }
-.hero-cap {
+/* WebGL hero scene — sits above the photo veil, below the copy */
+.hero-3d {
   position: absolute;
-  color: #1746a2;
-  opacity: .22;
-  animation: heroFloat 9s ease-in-out infinite;
+  inset: 0;
+  pointer-events: none;
 }
-@keyframes heroFloat {
-  0% { transform: translateY(10px) rotate(-8deg); }
-  50% { transform: translateY(-14px) rotate(8deg); }
-  100% { transform: translateY(10px) rotate(-8deg); }
+.hero-3d canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
 }
 .grade-badge {
   position: absolute;
