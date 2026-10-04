@@ -14,7 +14,7 @@ forms route buyers to a pre-filled WhatsApp message.
 | ------------------ | -------------------------------------------------- |
 | Framework          | Next.js 14 (App router) + TypeScript               |
 | UI                 | Tailwind CSS, custom design system, inline SVG icons |
-| Database / ORM     | Prisma + SQLite (swap to Supabase for prod)  |
+| Database / ORM     | Prisma +  (Supabase for prod)  |
 | Payments           | Paystack (initialize + verify + webhook)           |
 | Email              | Brevo & Zoho                                        |
 | Fulfilment (forms) | WhatsApp deep link (wa.me)                          |
