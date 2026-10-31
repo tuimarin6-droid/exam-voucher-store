@@ -21,6 +21,9 @@ interface VerifyResult {
 function SuccessInner() {
   const params = useSearchParams();
   const reference = params.get("reference");
+  const checkoutId = params.get("checkout_id"); // appended by Bachs on redirect
+  const isBachs = !!reference && reference.startsWith("BCH_");
+  const providerName = isBachs ? "Bachs" : "Paystack";
   const [state, setState] = useState<"loading" | "done" | "error">("loading");
   const [result, setResult] = useState<VerifyResult | null>(null);
 
@@ -29,14 +32,32 @@ function SuccessInner() {
       setState("error");
       return;
     }
-    fetch(`/api/paystack/verify?reference=${encodeURIComponent(reference)}`)
-      .then((r) => r.json())
-      .then((data: VerifyResult) => {
-        setResult(data);
-        setState("done");
-      })
-      .catch(() => setState("error"));
-  }, [reference]);
+    let cancelled = false;
+    let attempts = 0;
+    // Bachs confirms via webhook, which can land a few seconds after the
+    // redirect, so keep checking briefly while the payment is still "pending".
+    const check = () => {
+      const qs =
+        `reference=${encodeURIComponent(reference)}` +
+        (checkoutId ? `&checkout_id=${encodeURIComponent(checkoutId)}` : "");
+      fetch(`/api/paystack/verify?${qs}`)
+        .then((r) => r.json())
+        .then((data: VerifyResult) => {
+          if (cancelled) return;
+          if (!data.ok && data.status === "PAYMENT_PENDING" && attempts++ < 15) {
+            setTimeout(check, 3000);
+            return;
+          }
+          setResult(data);
+          setState("done");
+        })
+        .catch(() => !cancelled && setState("error"));
+    };
+    check();
+    return () => {
+      cancelled = true;
+    };
+  }, [reference, checkoutId]);
 
   return (
     <div className="mx-auto max-w-xl px-5 py-16">
@@ -45,7 +66,7 @@ function SuccessInner() {
           <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-brand-100 border-t-brand-600" />
           <p className="mt-4 font-600 text-ink-900">Verifying your payment…</p>
           <p className="mt-1 text-sm text-ink-500">
-            Confirming securely with Paystack. This takes a moment.
+            Confirming securely with {providerName}. This takes a moment.
           </p>
         </div>
       )}
@@ -140,8 +161,8 @@ function SuccessInner() {
       )}
 
       <p className="mt-6 flex items-center justify-center gap-2 text-xs text-ink-500">
-        <ShieldCheck width={14} height={14} /> Verified server-side with
-        Paystack
+        <ShieldCheck width={14} height={14} /> Verified server-side with{" "}
+        {providerName}
       </p>
     </div>
   );

@@ -5,6 +5,8 @@ import { getProduct } from "@/lib/products";
 import { initializeTransaction, newReference } from "@/lib/paystack";
 import { countAvailable } from "@/lib/inventory";
 import { computeQuote } from "@/lib/pricing";
+import { createCheckoutSession, BACHS_REFERENCE_PREFIX } from "@/lib/bachs";
+import { enabledProviders, defaultProvider } from "@/lib/providers";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +15,7 @@ const bodySchema = z.object({
   email: z.string().email(),
   phone: z.string().min(6).optional(),
   promoCode: z.string().max(64).optional(),
+  provider: z.enum(["paystack", "bachs"]).optional(),
 });
 
 /**
@@ -59,7 +62,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: quote.promoError || "Promo code is not valid." }, { status: 400 });
   }
 
-  const reference = newReference();
+  // Which gateway? Must be one the site owner has switched on.
+  const provider = parsed.provider ?? defaultProvider();
+  if (!enabledProviders().includes(provider)) {
+    return NextResponse.json({ error: "That payment method is not available." }, { status: 400 });
+  }
+
+  // The reference prefix records the provider (BCH_ = Bachs, EPG_ = Paystack).
+  const reference = newReference(provider === "bachs" ? BACHS_REFERENCE_PREFIX : "EPG");
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const callbackUrl = `${siteUrl}/success?reference=${reference}`;
 
@@ -82,6 +92,18 @@ export async function POST(req: Request) {
   });
 
   try {
+    if (provider === "bachs") {
+      const session = await createCheckoutSession({
+        email: parsed.email,
+        amountMinor: quote.total,
+        currency: product.currency,
+        reference,
+        successUrl: callbackUrl,
+        cancelUrl: `${siteUrl}/checkout?product=${encodeURIComponent(product.id)}`,
+        metadata: { productId: product.id, category: product.category },
+      });
+      return NextResponse.json({ authorizationUrl: session.checkout_url, reference });
+    }
     const init = await initializeTransaction({
       email: parsed.email,
       amount: quote.total,
@@ -96,7 +118,7 @@ export async function POST(req: Request) {
     });
     return NextResponse.json({ authorizationUrl: init.authorization_url, reference });
   } catch (err) {
-    console.error("[initialize] paystack error:", err);
+    console.error(`[initialize] ${provider} error:`, err);
     await prisma.order.update({ where: { reference }, data: { status: "FAILED" } });
     return NextResponse.json({ error: "Could not start payment. Try again." }, { status: 502 });
   }

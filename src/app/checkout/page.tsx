@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { PRODUCTS, formatGHS, getProduct } from "@/lib/products";
+import { enabledProviders, type PaymentProvider } from "@/lib/providers";
 import { ArrowRight, Check, Lock, ShieldCheck, Tag, X } from "@/components/icons";
 
 interface Quote {
@@ -31,6 +32,11 @@ function CheckoutInner() {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // --- Payment provider (first entry of NEXT_PUBLIC_PAYMENT_PROVIDERS is the default) ---
+  const providers = enabledProviders();
+  const [provider, setProvider] = useState<PaymentProvider>(providers[0]);
+  const providerLabel = provider === "bachs" ? "Bachs" : "Paystack";
 
   // --- Promo code + live pricing ---
   const [promoInput, setPromoInput] = useState("");
@@ -94,13 +100,14 @@ function CheckoutInner() {
         body: JSON.stringify({
           productId,
           email,
+          provider,
           phone: phone || undefined,
           promoCode: quote?.promoApplied ? promoInput.trim() : undefined,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not start payment.");
-      window.location.href = data.authorizationUrl; // hosted Paystack checkout
+      window.location.href = data.authorizationUrl; // hosted checkout (Paystack or Bachs)
     } catch (e: any) {
       setError(e.message);
       setLoading(false);
@@ -258,13 +265,39 @@ function CheckoutInner() {
             </p>
           )}
 
+          {providers.length > 1 && (
+            <div className="mt-6">
+              <p className="block text-sm font-600 text-ink-900">Pay with</p>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                {providers.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setProvider(p)}
+                    className={
+                      "rounded-xl border px-4 py-3 text-left text-sm font-600 text-ink-900 transition-colors duration-200 cursor-pointer " +
+                      (p === provider
+                        ? "border-brand-600 bg-brand-50"
+                        : "border-[#e6e5e3] bg-white hover:bg-[#f7f9fc]")
+                    }
+                  >
+                    {p === "bachs" ? "Bachs" : "Paystack"}
+                    <span className="block text-xs font-400 text-ink-500">
+                      {p === "bachs" ? "Card, mobile money & more" : "Card & mobile money"}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <button
             onClick={pay}
             disabled={loading || quoteLoading}
             className="btn-primary mt-6 w-full disabled:opacity-60"
           >
             {loading ? (
-              "Redirecting to Paystack…"
+              `Redirecting to ${providerLabel}…`
             ) : (
               <>
                 Pay {formatGHS(total)} securely{" "}
@@ -273,7 +306,7 @@ function CheckoutInner() {
             )}
           </button>
           <p className="mt-3 flex items-center justify-center gap-2 text-xs text-ink-500">
-            <Lock width={14} height={14} /> Secured by Paystack. We never store
+            <Lock width={14} height={14} /> Secured by {providerLabel}. We never store
             card details.
           </p>
         </div>

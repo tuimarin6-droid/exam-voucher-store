@@ -18,7 +18,9 @@ export async function GET(req: Request) {
   }
 
   try {
-    const result = await fulfilByReference(reference);
+    // Bachs appends ?checkout_id=... to the success URL; Paystack doesn't.
+    const checkoutId = searchParams.get("checkout_id") ?? undefined;
+    const result = await fulfilByReference(reference, { checkoutId });
 
     // For fulfilled FORM orders, hand back a ready-to-use WhatsApp deep link.
     let whatsappUrl: string | undefined;

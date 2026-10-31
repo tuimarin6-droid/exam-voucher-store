@@ -4,6 +4,18 @@ import { dispenseVoucher, OutOfStockError } from "./inventory";
 import { sendVoucherEmail } from "./email";
 import { verifyTransaction } from "./paystack";
 import { redeemPromoCode } from "./promo";
+import { providerOfReference } from "./providers";
+import { getCheckoutSession, referenceFromSession, sessionLooksPaid, decimalToMinor } from "./bachs";
+
+export interface FulfilOptions {
+  /** Bachs checkout id (from the success redirect) so we can double-check with Bachs' API. */
+  checkoutId?: string;
+  /**
+   * Payment already confirmed by a SIGNED webhook (Bachs). Lets us skip the
+   * API lookup. Never pass this from user-controlled input.
+   */
+  prepaid?: { amountMinor: number | null; currency: string | null };
+}
 
 export interface FulfilmentResult {
   ok: boolean;
@@ -28,7 +40,10 @@ export interface FulfilmentResult {
  *   4. VOUCHER -> atomically dispense a code + email it.
  *      FORM    -> just mark paid; the UI shows the WhatsApp button.
  */
-export async function fulfilByReference(reference: string): Promise<FulfilmentResult> {
+export async function fulfilByReference(
+  reference: string,
+  opts: FulfilOptions = {},
+): Promise<FulfilmentResult> {
   const order = await prisma.order.findUnique({ where: { reference } });
   if (!order) {
     return { ok: false, category: null, status: "UNKNOWN_ORDER", reference, message: "Order not found" };
@@ -47,8 +62,41 @@ export async function fulfilByReference(reference: string): Promise<FulfilmentRe
     };
   }
 
-  // 1) Verify with Paystack.
-  const tx = await verifyTransaction(reference);
+  // 1) Verify with the payment provider (server-side source of truth).
+  let tx: { status: string; amount: number; currency: string };
+  if (opts.prepaid) {
+    // Signed Bachs webhook already proved payment. Missing amount/currency
+    // (null) are filled from the order; present values are still checked below.
+    tx = {
+      status: "success",
+      amount: opts.prepaid.amountMinor ?? order.amount,
+      currency: opts.prepaid.currency ?? order.currency,
+    };
+  } else if (providerOfReference(reference) === "bachs") {
+    // Redirect / admin retry. Without a checkout id we can't ask Bachs, and the
+    // webhook will finish the job -> report "pending", never "failed".
+    if (!opts.checkoutId) {
+      return { ok: false, category: order.category as any, status: "PAYMENT_PENDING", reference };
+    }
+    let session: any;
+    try {
+      session = await getCheckoutSession(opts.checkoutId);
+    } catch (err) {
+      console.error(`[fulfilment] bachs lookup failed for ${reference}:`, err);
+      return { ok: false, category: order.category as any, status: "PAYMENT_PENDING", reference };
+    }
+    // The checkout id comes from the browser: make sure it is THIS order's.
+    if (referenceFromSession(session) !== reference || !sessionLooksPaid(session)) {
+      return { ok: false, category: order.category as any, status: "PAYMENT_PENDING", reference };
+    }
+    tx = {
+      status: "success",
+      amount: decimalToMinor(session?.pricing?.amount ?? session?.amount) ?? order.amount,
+      currency: String(session?.pricing?.currency ?? session?.currency ?? order.currency),
+    };
+  } else {
+    tx = await verifyTransaction(reference);
+  }
   if (tx.status !== "success") {
     await prisma.order.update({ where: { reference }, data: { status: "FAILED" } });
     return { ok: false, category: order.category as any, status: "PAYMENT_NOT_SUCCESSFUL", reference };
